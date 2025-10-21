@@ -11,6 +11,7 @@
     "data:destroy": "node --loader ts-node/esm seeder.ts -d",
     "import:products": "node --loader ts-node/esm dataImporter.ts import",
     "update:images": "node --loader ts-node/esm imageUpdater.ts update-images",
+    "seed:categories": "node --loader ts-node/esm seeders/categorySeeder.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

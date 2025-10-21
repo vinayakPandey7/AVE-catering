@@ -253,7 +253,7 @@ const deleteProduct = asyncHandler(async (req, res) => {
   res.json({ message: "Product deleted successfully" });
 });
 
-// @desc    Get all unique categories
+// @desc    Get all unique product categories (for backward compatibility)
 // @route   GET /api/products/categories
 // @access  Public
 const getCategories = asyncHandler(async (req, res) => {

@@ -606,4 +606,186 @@ CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 
 ---
 
+## 📁 Category Management API
+
+The Category API provides a hierarchical structure for organizing products with main categories and subcategories.
+
+### Category Endpoints Summary
+
+| Method     | Endpoint                    | Access     | Description                    |
+| ---------- | --------------------------- | ---------- | ------------------------------ |
+| **GET**    | `/categories`               | Public     | Get all categories with subcategories |
+| **GET**    | `/categories/tree`          | Public     | Get hierarchical category tree |
+| **GET**    | `/categories/:slug`         | Public     | Get category by slug           |
+| **POST**   | `/categories/admin/create`  | Admin Only | Create new category            |
+| **PUT**    | `/categories/admin/:id`     | Admin Only | Update category                |
+| **DELETE** | `/categories/admin/:id`     | Admin Only | Delete category                |
+
+### 1. Get All Categories
+
+**GET** `/categories`
+
+- **Description**: Get all main categories with their subcategories and product counts
+- **Access**: Public
+- **Response**:
+
+```json
+[
+  {
+    "_id": "category_id",
+    "name": "Beverages",
+    "slug": "beverages",
+    "description": "All types of beverages including sodas, juices, water, and energy drinks",
+    "image": "cloudinary_image_url",
+    "displayOrder": 1,
+    "isActive": true,
+    "productCount": 45,
+    "subcategories": [
+      {
+        "_id": "subcategory_id",
+        "name": "Soda",
+        "slug": "soda",
+        "description": "Carbonated soft drinks",
+        "parentCategory": "category_id",
+        "displayOrder": 1,
+        "productCount": 15
+      },
+      {
+        "_id": "subcategory_id_2",
+        "name": "Juice",
+        "slug": "juice", 
+        "description": "Fruit juices and concentrates",
+        "parentCategory": "category_id",
+        "displayOrder": 2,
+        "productCount": 12
+      }
+    ],
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "updatedAt": "2025-01-01T00:00:00.000Z"
+  }
+]
+```
+
+### 2. Get Category Tree
+
+**GET** `/categories/tree`
+
+- **Description**: Get hierarchical tree structure of all categories
+- **Access**: Public
+- **Response**: Nested category structure with all relationships
+
+### 3. Get Category by Slug
+
+**GET** `/categories/:slug`
+
+- **Description**: Get specific category details by slug
+- **Access**: Public
+- **Example**: `/categories/beverages`
+- **Response**: Single category object with subcategories and product count
+
+### 4. Create Category
+
+**POST** `/categories/admin/create`
+
+- **Description**: Create a new category or subcategory (Admin only)
+- **Access**: Private/Admin
+- **Content-Type**: `multipart/form-data`
+- **Form Data**:
+
+```
+name: Category Name (required)
+description: Category description (optional)
+parentCategoryId: ID of parent category (optional - for subcategories)
+displayOrder: Sort order number (optional, default: 0)
+image: [file upload] (optional)
+```
+
+- **Response**: Created category object
+- **Error Codes**: 400 (Name exists, invalid parent), 401 (Unauthorized), 403 (Admin required)
+
+### 5. Update Category
+
+**PUT** `/categories/admin/:id`
+
+- **Description**: Update existing category (Admin only)
+- **Access**: Private/Admin
+- **Content-Type**: `multipart/form-data`
+- **Form Data**: Same fields as create (all optional)
+- **Response**: Updated category object
+
+### 6. Delete Category
+
+**DELETE** `/categories/admin/:id`
+
+- **Description**: Delete a category (Admin only)
+- **Access**: Private/Admin
+- **Response**:
+
+```json
+{
+  "message": "Category deleted successfully"
+}
+```
+
+- **Error Codes**: 400 (Has products/subcategories), 404 (Not found), 401 (Unauthorized)
+
+### Pre-seeded Categories
+
+The system comes with 13 main categories, each with 3 subcategories (39 subcategories total):
+
+1. **Beverages** - Soda, Juice, Water, Energy Drinks
+2. **Candy & Snacks** - Candy, Chips, Nuts  
+3. **Cleaning & Laundry** - Detergent, Cleaning Supplies, Paper Products
+4. **Health & Beauty** - Personal Care, Skincare, Health Products
+5. **Grocery** - Canned Goods, Pasta & Rice, Condiments
+6. **Ice Cream** - Premium Ice Cream, Frozen Treats, Sherbet & Sorbet
+7. **Frozen Food** - Frozen Meals, Frozen Vegetables, Frozen Meat
+8. **Restaurant Essentials** - Bulk Ingredients, Disposables, Kitchen Supplies
+9. **Hecho en Mexico** - Mexican Beverages, Mexican Snacks, Mexican Ingredients
+10. **Household & Kitchen** - Kitchen Tools, Storage, Small Appliances
+11. **Tobacco** - Cigarettes, Cigars, Accessories
+12. **Pet** - Dog Food, Cat Food, Pet Treats
+13. **Other** - Electronics, Seasonal, Gift Cards
+
+### Category Features
+
+- **Hierarchical Structure**: Support for unlimited nesting levels
+- **SEO-Friendly Slugs**: Auto-generated from category names
+- **Product Counting**: Real-time product counts per category
+- **Image Support**: Cloudinary integration for category images
+- **Sorting**: Custom display order with fallback to alphabetical
+- **Active Status**: Enable/disable categories without deletion
+
+### Seeding Categories
+
+```bash
+# Seed all predefined categories
+cd backend && pnpm run seed:categories
+
+# Test the category API
+cd backend && ./test-categories.sh
+```
+
+### Frontend Integration Example
+
+```javascript
+// Get all categories for navigation menu
+const getCategories = async () => {
+  const response = await fetch('/api/categories');
+  return response.json();
+};
+
+// Get products by category
+const getProductsByCategory = async (categoryName) => {
+  const response = await fetch(`/api/products?category=${categoryName}`);
+  return response.json();
+};
+
+// Navigate to category page
+const categorySlug = 'beverages';
+const categoryData = await fetch(`/api/categories/${categorySlug}`);
+```
+
+---
+
 This API is ready for production use with proper security, authentication, and data validation!
