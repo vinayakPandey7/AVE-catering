@@ -1,284 +1,258 @@
-# Wholesale Grocery E-Commerce Platform
+# 🚀 Wholesale Market - Production-Ready E-commerce Platform
 
-A modern, full-featured wholesale e-commerce platform built with Next.js 15, TypeScript, Tailwind CSS, shadcn/ui, and Redux Toolkit. Inspired by [Mercaso](https://shop.mercaso.com/), this platform is designed for B2B wholesale grocery and household products.
-
-## 🚀 Features
-
-### Core Functionality
-- **Modern UI/UX**: Clean, responsive design with white theme and brand color (#1C75BC)
-- **Product Catalog**: Comprehensive product browsing with categories and search
-- **Shopping Cart**: Real-time cart management with Redux state
-- **User Authentication**: Login and registration system for wholesalers
-- **User Dashboard**: Account management and order history
-- **Checkout System**: Complete checkout flow with payment options
-- **Lazy Loading**: React.lazy() implementation for optimal performance
-- **Reusable Components**: Well-structured component architecture
-
-### Technical Features
-- **Next.js 15 App Router**: Latest Next.js with server and client components
-- **TypeScript**: Full type safety throughout the application
-- **Redux Toolkit**: State management for cart, auth, and products
-- **Tailwind CSS**: Utility-first CSS framework
-- **shadcn/ui**: Beautiful, accessible UI components
-- **Responsive Design**: Mobile-first approach
-- **Toast Notifications**: User feedback with Sonner
-- **SEO Optimized**: Proper metadata and structure
+A modern, scalable, and production-ready wholesale e-commerce platform with **independent frontend and backend deployments**.
 
 ## 📁 Project Structure
 
 ```
-wholesale-grocery-ecommerce/
-├── app/                          # Next.js 15 App Directory
-│   ├── auth/                     # Authentication pages
-│   │   ├── login/
-│   │   └── register/
-│   ├── checkout/                 # Checkout page
-│   ├── dashboard/                # User dashboard
-│   ├── product/[id]/             # Product detail page
-│   ├── products/                 # Products listing page
-│   ├── globals.css               # Global styles with custom theme
-│   ├── layout.tsx                # Root layout with providers
-│   └── page.tsx                  # Homepage
-├── components/
-│   ├── features/                 # Feature-specific components
-│   │   ├── auth/
-│   │   │   └── UserMenu.tsx
-│   │   └── cart/
-│   │       └── CartSheet.tsx
-│   ├── home/                     # Homepage sections
-│   │   ├── CategoryBanner.tsx
-│   │   ├── HeroCarousel.tsx
-│   │   ├── HeroSection.tsx
-│   │   └── ProductSection.tsx
-│   ├── layout/                   # Layout components
-│   │   ├── CategoryNav.tsx
-│   │   ├── Footer.tsx
-│   │   └── Header.tsx
-│   ├── shared/                   # Reusable components
-│   │   ├── ProductCard.tsx
-│   │   └── ProductGrid.tsx
-│   └── ui/                       # shadcn/ui components
-├── lib/
-│   ├── data/
-│   │   └── mockProducts.ts       # Mock product data
-│   ├── providers/
-│   │   └── redux-provider.tsx    # Redux provider
-│   ├── store/                    # Redux store setup
-│   │   ├── slices/
-│   │   │   ├── authSlice.ts
-│   │   │   ├── cartSlice.ts
-│   │   │   └── productsSlice.ts
-│   │   ├── hooks.ts
-│   │   └── store.ts
-│   └── utils.ts
-└── public/
-    └── images/                   # Product and category images
+wholesale-market/
+├── client/                 # 🎨 Frontend (Next.js) - Independent Deployment
+│   ├── app/               # Next.js App Router
+│   ├── components/        # React components
+│   ├── lib/               # Utilities and configurations
+│   ├── public/            # Static assets
+│   ├── Dockerfile         # Client Docker configuration
+│   ├── docker-compose.yml # Client Docker Compose
+│   ├── nginx.conf         # Client Nginx configuration
+│   ├── deploy.sh          # Client deployment script
+│   └── README.md          # Client documentation
+├── server/                 # 🚀 Backend (Express.js) - Independent Deployment
+│   ├── config/            # Database and service configurations
+│   ├── controllers/       # API controllers
+│   ├── middleware/        # Custom middleware
+│   ├── models/            # Database models
+│   ├── routes/            # API routes
+│   ├── utils/             # Utility functions
+│   ├── Dockerfile         # Server Docker configuration
+│   ├── docker-compose.yml # Server Docker Compose
+│   ├── nginx.conf         # Server Nginx configuration
+│   ├── deploy.sh          # Server deployment script
+│   └── README.md          # Server documentation
+├── .github/                # CI/CD workflows
+├── deploy.sh              # Main deployment script
+└── README.md              # This file
 ```
 
-## 🎨 Theme & Design
-
-- **Primary Color**: #1C75BC (Blue)
-- **Background**: White
-- **Typography**: Inter font family
-- **Design System**: Based on shadcn/ui with custom theme
-- **UI Components**: Button, Card, Input, Badge, Dialog, Sheet, Dropdown, Skeleton
-
-## 🛠️ Installation & Setup
+## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ 
-- npm or yarn
+- Node.js 18+
+- npm 8+
+- Docker & Docker Compose
 
-### Installation Steps
+### Development Setup
 
-1. **Clone or navigate to the project directory**
+1. **Clone and Install**
    ```bash
-   cd "/Users/amit/Downloads/Demo projects/AVE Catering/wholesale-grocery-ecommerce"
+   git clone <repository-url>
+   cd wholesale-market
    ```
 
-2. **Install dependencies**
+2. **Frontend Development**
    ```bash
+   cd client
    npm install
-   ```
-
-3. **Run the development server**
-   ```bash
    npm run dev
+   # Open http://localhost:3000
    ```
 
-4. **Open your browser**
-   Navigate to [http://localhost:3000](http://localhost:3000)
+3. **Backend Development**
+   ```bash
+   cd server
+   npm install
+   npm run dev
+   # API available at http://localhost:5000
+   ```
 
-## 📦 Available Scripts
-
+### Docker Development
 ```bash
+# Deploy both services
+./deploy.sh all development
+
+# Deploy only frontend
+./deploy.sh client development
+
+# Deploy only backend
+./deploy.sh server development
+```
+
+## 🎯 Deployment Options
+
+### **Independent Deployments**
+
+#### **Frontend (Client)**
+```bash
+cd client
+./deploy.sh production
+```
+
+#### **Backend (Server)**
+```bash
+cd server
+./deploy.sh production
+```
+
+### **Combined Deployment**
+```bash
+# Deploy both services
+./deploy.sh all production
+
+# Deploy only frontend
+./deploy.sh client production
+
+# Deploy only backend
+./deploy.sh server production
+```
+
+## 🌐 Cloud Deployment
+
+### **Frontend Deployment**
+- ✅ **Vercel** (Recommended for Next.js)
+- ✅ **Netlify**
+- ✅ **AWS Amplify**
+- ✅ **Any static hosting**
+
+### **Backend Deployment**
+- ✅ **Railway** (Recommended for Node.js)
+- ✅ **Heroku**
+- ✅ **AWS ECS**
+- ✅ **DigitalOcean App Platform**
+
+## 📊 Service URLs
+
+| Service | Port | URL |
+|---------|------|-----|
+| **Frontend** | 3000 | http://localhost:3000 |
+| **Backend** | 5000 | http://localhost:5000 |
+| **MongoDB** | 27017 | mongodb://localhost:27017 |
+| **Redis** | 6379 | redis://localhost:6379 |
+
+## 🛠️ Available Commands
+
+### **Root Level**
+```bash
+./deploy.sh all production     # Deploy both services
+./deploy.sh client production  # Deploy frontend only
+./deploy.sh server production  # Deploy backend only
+```
+
+### **Frontend (Client)**
+```bash
+cd client
 npm run dev          # Start development server
 npm run build        # Build for production
 npm run start        # Start production server
-npm run lint         # Run ESLint
+./deploy.sh production  # Deploy with Docker
 ```
 
-## 🔧 Technologies Used
-
-- **Framework**: Next.js 15
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **UI Components**: shadcn/ui
-- **State Management**: Redux Toolkit
-- **Icons**: Lucide React
-- **Notifications**: Sonner
-- **Forms**: React Hook Form (ready to integrate)
-
-## 📱 Pages & Routes
-
-| Route | Description |
-|-------|-------------|
-| `/` | Homepage with hero, categories, and featured products |
-| `/products` | All products listing with filters |
-| `/product/[id]` | Product detail page |
-| `/auth/login` | User login page |
-| `/auth/register` | User registration page |
-| `/dashboard` | User dashboard |
-| `/checkout` | Checkout page |
-
-## 🎯 Key Features Explanation
-
-### State Management (Redux)
-
-The application uses Redux Toolkit for state management with three main slices:
-
-- **Cart Slice**: Manages shopping cart items, quantities, and totals
-- **Auth Slice**: Handles user authentication state
-- **Products Slice**: Manages product catalog and filters
-
-### Lazy Loading
-
-React.lazy() is used extensively for code splitting:
-- Product sections
-- Cart sheet
-- Category banners
-- User menu
-
-This ensures optimal initial page load performance.
-
-### Reusable Components
-
-The project follows a modular component architecture:
-- **Shared Components**: ProductCard, ProductGrid
-- **Layout Components**: Header, Footer, CategoryNav
-- **Feature Components**: CartSheet, UserMenu
-- **UI Components**: All shadcn/ui components
-
-### Responsive Design
-
-- Mobile-first approach
-- Breakpoints: sm (640px), md (768px), lg (1024px), xl (1280px)
-- Fully responsive navigation and layout
-- Touch-optimized for mobile devices
-
-## 🔐 Authentication Flow
-
-1. User registers via `/auth/register`
-2. Account pending approval (B2B workflow)
-3. User logs in via `/auth/login`
-4. Redux stores user state
-5. Protected routes check authentication
-6. User can access dashboard and checkout
-
-## 🛒 Shopping Flow
-
-1. Browse products on homepage or products page
-2. Add items to cart (stored in Redux)
-3. View cart via cart sheet (slide-over)
-4. Proceed to checkout
-5. Fill shipping and payment information
-6. Place order
-
-## 📝 Mock Data
-
-The project includes comprehensive mock data in `lib/data/mockProducts.ts`:
-- 18 sample products across categories
-- Featured categories
-- Realistic pricing and product information
-
-## 🎨 Customization
-
-### Theme Colors
-
-Edit `app/globals.css` to customize theme colors:
-```css
---primary: oklch(0.509 0.112 236.8); /* #1C75BC */
-```
-
-### Add New Components
-
+### **Backend (Server)**
 ```bash
-npx shadcn@latest add [component-name]
+cd server
+npm run dev          # Start development server
+npm run build        # Build TypeScript
+npm run start        # Start production server
+./deploy.sh production  # Deploy with Docker
 ```
 
-### Modify Products
+## 🏗️ Architecture
 
-Edit `lib/data/mockProducts.ts` to add or modify products.
+### **Frontend (Next.js)**
+- **Framework**: Next.js 15 with App Router
+- **Styling**: Tailwind CSS 4
+- **State Management**: Redux Toolkit
+- **UI Components**: Radix UI + Custom Components
+- **Performance**: Image optimization, code splitting, caching
+
+### **Backend (Express.js)**
+- **Framework**: Express.js 5
+- **Database**: MongoDB with Mongoose
+- **Cache**: Redis
+- **Authentication**: JWT
+- **File Upload**: Cloudinary
+- **Security**: Helmet, CORS, Rate Limiting
+
+## 🔧 Configuration
+
+### **Frontend Environment**
+```bash
+# client/.env.local
+NODE_ENV=production
+NEXT_PUBLIC_API_URL=https://your-api-domain.com
+NEXT_PUBLIC_APP_NAME=Wholesale Market
+```
+
+### **Backend Environment**
+```bash
+# server/.env
+NODE_ENV=production
+PORT=5000
+MONGODB_URI=mongodb://your-mongodb-url
+JWT_SECRET=your-super-secret-jwt-key
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+```
+
+## 📈 Production Benefits
+
+### **Scalability**
+- ✅ **Independent scaling** of frontend and backend
+- ✅ **Different hosting** for each service
+- ✅ **Load balancing** for high traffic
+- ✅ **CDN integration** for frontend
+
+### **Deployment Flexibility**
+- ✅ **Separate deployments** without affecting each other
+- ✅ **Different environments** for each service
+- ✅ **Rollback capability** for individual services
+- ✅ **A/B testing** for frontend
+
+### **Cost Optimization**
+- ✅ **Pay only** for what you use
+- ✅ **Scale independently** based on demand
+- ✅ **Use different** hosting providers
+- ✅ **Optimize costs** per service
 
 ## 🚀 Production Deployment
 
-### Build for production
-```bash
-npm run build
-```
+### **Recommended Strategy**
 
-### Deploy to Vercel (Recommended)
-1. Push code to GitHub
-2. Import project in Vercel
-3. Deploy automatically
+1. **Deploy Backend First**
+   ```bash
+   ./deploy.sh server production
+   ```
 
-### Environment Variables
-Create `.env.local` for production:
-```env
-NEXT_PUBLIC_API_URL=your_api_url
-NEXT_PUBLIC_STRIPE_KEY=your_stripe_key
-```
+2. **Wait for Backend to be Ready**
+   ```bash
+   # Check health: http://localhost:5000/health
+   ```
 
-## 📊 Performance Optimizations
+3. **Deploy Frontend**
+   ```bash
+   ./deploy.sh client production
+   ```
 
-- ✅ React.lazy() for code splitting
-- ✅ Next.js Image optimization
-- ✅ Tailwind CSS purging
-- ✅ Component-level suspense boundaries
-- ✅ Efficient Redux state management
-- ✅ Minimal dependencies
+## 📚 Documentation
 
-## 🔜 Future Enhancements
+- [Frontend Documentation](./client/README.md)
+- [Backend Documentation](./server/README.md)
+- [Separate Deployment Guide](./SEPARATE_DEPLOYMENT_GUIDE.md)
+- [API Integration Summary](./API_INTEGRATION_SUMMARY.md)
 
-- [ ] Backend API integration (MongoDB as per preference)
-- [ ] Payment gateway integration (Stripe/PayPal)
-- [ ] Real-time order tracking
-- [ ] Advanced filtering and sorting
-- [ ] Wishlist functionality
-- [ ] Product reviews and ratings
-- [ ] Inventory management system
-- [ ] Admin dashboard
-- [ ] Email notifications
-- [ ] Multi-language support
+## 🤝 Contributing
 
-## 📞 Support & Contact
-
-For support and inquiries:
-- Email: help@wholesalemarket.com
-- Phone: (323) 250-3212
-- Hours: Monday-Saturday (7am-7pm PT)
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
 
 ## 📄 License
 
 This project is licensed under the MIT License.
 
-## 🙏 Acknowledgments
+## 🆘 Support
 
-- Inspired by [Mercaso](https://shop.mercaso.com/)
-- Built with [Next.js](https://nextjs.org/)
-- UI components by [shadcn/ui](https://ui.shadcn.com/)
-- Icons by [Lucide](https://lucide.dev/)
+For support, email support@wholesalemarket.com or create an issue on GitHub.
 
 ---
 
-**Note**: This is a demonstration project. Images are placeholders. Replace with actual product images for production use.
+**Built with ❤️ for the wholesale market industry**
