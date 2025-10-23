@@ -5,7 +5,7 @@ export const translations = {
     welcome: "Welcome!",
     freeDelivery: "Free Delivery on Orders over $50+",
     callText: "Call or Text: (323) 250-3212",
-    wholesaleMarket: "Wholesale Market",
+    wholesaleMarket: "AVE Catering",
     searchPlaceholder: "Search products...",
     myOrders: "My Orders",
     topItems: "Top Items",
@@ -195,7 +195,7 @@ export const translations = {
     
     // Footer
     aboutUs: "About Us",
-    aboutDescription: "At Wholesale Market, you can score wholesale savings on big name brands and have them delivered directly to your door.",
+    aboutDescription: "At AVE Catering, you can score wholesale savings on big name brands and have them delivered directly to your door.",
     quickLinks: "Quick Links",
     customerService: "Customer Service",
     newsletter: "Newsletter",
@@ -243,7 +243,7 @@ export const translations = {
     welcome: "¡Bienvenidos!",
     freeDelivery: "Envío Gratis en Pedidos de $50+",
     callText: "Llama o Envía Texto: (323) 250-3212",
-    wholesaleMarket: "Mercado Mayorista",
+    wholesaleMarket: "AVE Catering",
     searchPlaceholder: "Buscar productos...",
     myOrders: "Mis Pedidos",
     topItems: "Artículos Top",
@@ -433,7 +433,7 @@ export const translations = {
     
     // Footer
     aboutUs: "Acerca de Nosotros",
-    aboutDescription: "En Mercado Mayorista, puedes obtener ahorros mayoristas en marcas reconocidas y tenerlas entregadas directamente a tu puerta.",
+    aboutDescription: "En AVE Catering, puedes obtener ahorros mayoristas en marcas reconocidas y tenerlas entregadas directamente a tu puerta.",
     quickLinks: "Enlaces Rápidos",
     customerService: "Servicio al Cliente",
     newsletter: "Boletín",
@@ -481,7 +481,7 @@ export const translations = {
     welcome: "어서 오십시오!",
     freeDelivery: "$50 이상 주문 시 무료 배송",
     callText: "전화 또는 문자: (323) 250-3212",
-    wholesaleMarket: "도매 시장",
+    wholesaleMarket: "AVE Catering",
     searchPlaceholder: "제품 검색...",
     myOrders: "내 주문",
     topItems: "인기 상품",
@@ -671,7 +671,7 @@ export const translations = {
     
     // Footer
     aboutUs: "회사 소개",
-    aboutDescription: "도매 시장에서는 유명 브랜드의 도매 할인을 받고 직접 문앞까지 배송받을 수 있습니다.",
+    aboutDescription: "AVE Catering에서는 유명 브랜드의 도매 할인을 받고 직접 문앞까지 배송받을 수 있습니다.",
     quickLinks: "빠른 링크",
     customerService: "고객 서비스",
     newsletter: "뉴스레터",
@@ -719,7 +719,7 @@ export const translations = {
     welcome: "مرحباً!",
     freeDelivery: "شحن مجاني للطلبات أكثر من $50",
     callText: "اتصل أو أرسل رسالة: (323) 250-3212",
-    wholesaleMarket: "سوق الجملة",
+    wholesaleMarket: "AVE Catering",
     searchPlaceholder: "البحث عن المنتجات...",
     myOrders: "طلباتي",
     topItems: "الأصناف المميزة",
@@ -909,7 +909,7 @@ export const translations = {
     
     // Footer
     aboutUs: "من نحن",
-    aboutDescription: "في سوق الجملة، يمكنك الحصول على توفيرات بالجملة على العلامات التجارية الكبيرة وتوصيلها مباشرة إلى بابك.",
+    aboutDescription: "في AVE Catering، يمكنك الحصول على توفيرات بالجملة على العلامات التجارية الكبيرة وتوصيلها مباشرة إلى بابك.",
     quickLinks: "روابط سريعة",
     customerService: "خدمة العملاء",
     newsletter: "النشرة الإخبارية",

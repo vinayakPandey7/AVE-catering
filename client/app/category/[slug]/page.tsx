@@ -42,6 +42,7 @@ export default function CategoryPage(): React.JSX.Element {
   // State for filters
   const [selectedBrands, setSelectedBrands] = React.useState<string[]>([]);
   const [selectedSubcategory, setSelectedSubcategory] = React.useState<string>('all');
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = React.useState(false);
 
   // Load data on component mount
   useEffect(() => {
@@ -195,10 +196,10 @@ export default function CategoryPage(): React.JSX.Element {
     <>
       <Header />
       
-      <main className="min-h-screen bg-gray-50 py-8">
-        <div className="container mx-auto px-4">
+      <main className="min-h-screen bg-gray-50 py-4">
+        <div className="container mx-auto px-4 max-w-7xl">
           {/* Breadcrumb Navigation */}
-          <nav className="mb-6">
+          <nav className="mb-3">
             <ol className="flex items-center gap-2 text-sm">
               <li className="flex items-center gap-2">
                 <Link href="/" className="text-muted-foreground hover:text-primary transition-colors">
@@ -219,54 +220,54 @@ export default function CategoryPage(): React.JSX.Element {
           </nav>
 
           {/* Category Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold mb-3">{categoryName}</h1>
-            <p className="text-lg text-muted-foreground mb-4">
+          <div className="mb-4">
+            <h1 className="text-2xl font-bold mb-1">{categoryName}</h1>
+            <p className="text-sm text-muted-foreground mb-2">
               {getCategoryDescription(slug)}
             </p>
-            <div className="flex items-center gap-4 text-sm">
+            {/* <div className="flex items-center gap-4 text-xs">
               <span className="text-muted-foreground">
                 {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} available
               </span>
-            </div>
+            </div> */}
           </div>
 
-          {/* Active Filters */}
-          {(selectedBrands.length > 0 || selectedSubcategory !== 'all') && (
-            <Card className="mb-6">
-              <CardContent className="py-4">
-                <div className="flex items-center justify-between flex-wrap gap-4">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-medium">Active Filters:</span>
-                    {selectedBrands.map(brand => (
-                      <Badge key={brand} variant="secondary" className="gap-1">
-                        {brand}
-                        <button onClick={() => toggleBrand(brand)} className="ml-1 hover:text-destructive">
-                          <X className="h-3 w-3" />
-                        </button>
-                      </Badge>
-                    ))}
-                    {selectedSubcategory !== 'all' && (
-                      <Badge variant="secondary" className="gap-1">
-                        {selectedSubcategory}
-                        <button onClick={() => setSelectedSubcategory('all')} className="ml-1 hover:text-destructive">
-                          <X className="h-3 w-3" />
-                        </button>
-                      </Badge>
-                    )}
-                  </div>
-                  <Button variant="ghost" size="sm" onClick={clearFilters}>
-                    Clear All
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+
+          {/* Mobile Filter Toggle */}
+          <div className="lg:hidden mb-4 sticky top-16 z-40 bg-white py-2 -mx-4 px-4 border-b">
+            <Button 
+              variant="outline" 
+              className="w-full justify-between"
+              onClick={() => setIsMobileFiltersOpen(!isMobileFiltersOpen)}
+            >
+              <span className="flex items-center gap-2">
+                <Filter className="h-4 w-4" />
+                Filters & Categories
+                {(selectedBrands.length > 0 || selectedSubcategory !== 'all') && (
+                  <Badge variant="secondary" className="ml-2">
+                    {selectedBrands.length + (selectedSubcategory !== 'all' ? 1 : 0)}
+                  </Badge>
+                )}
+              </span>
+              <ChevronRight className={`h-4 w-4 transition-transform ${isMobileFiltersOpen ? 'rotate-90' : ''}`} />
+            </Button>
+          </div>
 
           {/* Main Content with Sidebar */}
           <div className="grid lg:grid-cols-4 gap-6">
             {/* Filters Sidebar */}
-            <aside className="lg:col-span-1 space-y-4">
+            <aside className={`lg:col-span-1 space-y-4 ${isMobileFiltersOpen ? 'block' : 'hidden lg:block'}`}>
+              {/* Mobile Close Button */}
+              <div className="lg:hidden flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">Filters</h3>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setIsMobileFiltersOpen(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
               {/* Shop By Category */}
               {subcategories.length > 0 && (
                 <Card>
@@ -361,29 +362,47 @@ export default function CategoryPage(): React.JSX.Element {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Clear Filters Button */}
+              {(selectedBrands.length > 0 || selectedSubcategory !== 'all') && (
+                <Card>
+                  <CardContent className="p-4">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={clearFilters}
+                      className="w-full"
+                    >
+                      Clear All Filters
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
             </aside>
 
             {/* Products Grid */}
             <div className="lg:col-span-3">
               {/* Sort and View Options */}
-              <div className="flex items-center justify-between mb-6 bg-white p-4 rounded-lg border">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 bg-white p-3 rounded-lg border gap-3">
                 <div className="flex items-center gap-2">
                   <Filter className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium">
                     {filteredProducts.length} {filteredProducts.length === 1 ? 'Product' : 'Products'}
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Sort by:</span>
-                  <Button variant="outline" size="sm">
-                    Featured
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    Price: Low to High
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    Best Sellers
-                  </Button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm text-muted-foreground hidden sm:inline">Sort by:</span>
+                  <div className="flex flex-wrap gap-2">
+                    <Button variant="outline" size="sm" className="text-xs sm:text-sm">
+                      Featured
+                    </Button>
+                    <Button variant="outline" size="sm" className="text-xs sm:text-sm">
+                      Price: Low to High
+                    </Button>
+                    <Button variant="outline" size="sm" className="text-xs sm:text-sm">
+                      Best Sellers
+                    </Button>
+                  </div>
                 </div>
               </div>
 

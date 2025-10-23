@@ -60,10 +60,10 @@ export default function RegisterPage(): React.JSX.Element {
         <CardHeader className="space-y-1">
           <div className="flex justify-center mb-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-2xl">
-              W
+              A
             </div>
           </div>
-          <CardTitle className="text-2xl text-center">Create Wholesale Account</CardTitle>
+          <CardTitle className="text-2xl text-center">Create AVE Catering Account</CardTitle>
           <CardDescription className="text-center">
             Register your business for wholesale pricing and benefits
           </CardDescription>

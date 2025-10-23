@@ -48,12 +48,12 @@ export default function LoginPage(): React.JSX.Element {
         <CardHeader className="space-y-1">
           <div className="flex justify-center mb-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-2xl">
-              W
+              A
             </div>
           </div>
           <CardTitle className="text-2xl text-center">Welcome Back</CardTitle>
           <CardDescription className="text-center">
-            Sign in to your wholesale account
+            Sign in to your AVE Catering account
           </CardDescription>
         </CardHeader>
         <CardContent>

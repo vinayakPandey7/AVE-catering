@@ -16,7 +16,7 @@ export default function Footer(): React.JSX.Element {
           <div>
             <h3 className="font-bold text-lg mb-4">{t('about')}</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              At Wholesale Market, you can score wholesale savings on big name brands and have them delivered directly to your door.
+              At AVE Catering, you can score wholesale savings on big name brands and have them delivered directly to your door.
             </p>
             <div className="flex gap-3">
               <Button variant="outline" size="icon" asChild>
@@ -128,7 +128,7 @@ export default function Footer(): React.JSX.Element {
         <div className="mt-12 pt-8 border-t">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-muted-foreground">
-              © 2025 Wholesale Market. All rights reserved.
+              © 2025 AVE Catering. All rights reserved.
             </p>
             <div className="flex gap-6 text-sm">
               <Link href="/privacy" className="text-muted-foreground hover:text-primary transition">
@@ -140,7 +140,7 @@ export default function Footer(): React.JSX.Element {
             </div>
           </div>
           <p className="text-center mt-4 text-xs text-muted-foreground">
-            You can reach us at <a href="mailto:help@wholesalemarket.com" className="text-primary">help@wholesalemarket.com</a> or <a href="tel:3232503212" className="text-primary">(323) 250-3212</a> Monday-Saturday (7am-7pm PT)
+            You can reach us at <a href="mailto:help@avecatering.com" className="text-primary">help@avecatering.com</a> or <a href="tel:3232503212" className="text-primary">(323) 250-3212</a> Monday-Saturday (7am-7pm PT)
           </p>
         </div>
       </div>
