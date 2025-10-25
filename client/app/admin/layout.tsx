@@ -53,7 +53,7 @@ export default function AdminLayout({
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-30 w-64 bg-gradient-to-b from-[#006e9d] to-[#004d6f] border-r border-[#005580] transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-30 w-64 bg-gradient-to-b from-[#006e9d] to-[#004d6f] border-r border-[#005580] transform transition-transform duration-300 ease-in-out lg:translate-x-0 flex flex-col ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -79,7 +79,7 @@ export default function AdminLayout({
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 py-6 space-y-1">
+        <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
           {navigation.map((item) => {
             const isActive = pathname === item.href || (item.href !== '/admin' && pathname?.startsWith(item.href));
             return (
@@ -100,27 +100,27 @@ export default function AdminLayout({
           })}
         </nav>
 
-                {/* Admin user info */}
-                <div className="border-t border-white/10 p-4 bg-black/10">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center shadow-lg">
-                      <span className="text-white font-semibold">AD</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate text-white">Admin User</p>
-                      <p className="text-xs text-white/60 truncate">admin@wholesale.com</p>
-                    </div>
-                  </div>
-                  <div className="mt-3 pt-3 border-t border-white/10">
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start gap-3 text-white/80 hover:text-white hover:bg-white/10 h-10"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      <span className="text-sm font-medium">Logout</span>
-                    </Button>
-                  </div>
-                </div>
+        {/* Admin user info - Fixed at bottom */}
+        <div className="border-t border-white/10 p-4 bg-black/10 mt-auto">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center shadow-lg">
+              <span className="text-white font-semibold">AD</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate text-white">Admin User</p>
+              <p className="text-xs text-white/60 truncate">admin@wholesale.com</p>
+            </div>
+          </div>
+          <div className="mt-3 pt-3 border-t border-white/10">
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start gap-3 text-white/80 hover:text-white hover:bg-white/10 h-10"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="text-sm font-medium">Logout</span>
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* Main content */}
@@ -153,12 +153,12 @@ export default function AdminLayout({
 
             <div className="flex items-center gap-3">
               {/* Notifications */}
-              <Button variant="ghost" size="icon" className="relative">
+              {/* <Button variant="ghost" size="icon" className="relative">
                 <Bell className="h-5 w-5" />
                 <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
                   3
                 </Badge>
-              </Button>
+              </Button> */}
 
               {/* Quick actions */}
               <div className="hidden md:flex items-center gap-2">

@@ -216,7 +216,7 @@ export default function SettingsPage() {
           </Card>
 
           {/* Notification Settings */}
-          <Card className="border-0 shadow-md">
+          {/* <Card className="border-0 shadow-md">
             <CardHeader className="bg-gradient-to-r from-[#006e9d]/5 to-transparent">
               <CardTitle className="flex items-center gap-2 text-[#006e9d]">
                 <Bell className="h-5 w-5" />
@@ -274,10 +274,10 @@ export default function SettingsPage() {
                 </label>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
 
           {/* Actions */}
-          <Card className="border-0 shadow-md">
+          {/* <Card className="border-0 shadow-md"> */}
             <CardContent className="pt-6">
               <div className="flex items-center justify-end">
                 <Button type="submit" className="gap-2 bg-[#006e9d] hover:bg-[#005580] text-white shadow-md">
@@ -286,7 +286,7 @@ export default function SettingsPage() {
                 </Button>
               </div>
             </CardContent>
-          </Card>
+          {/* </Card> */}
         </div>
       </form>
     </div>
