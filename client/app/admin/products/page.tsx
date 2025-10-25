@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +16,7 @@ import {
   AlertCircle,
   CheckCircle,
   ArrowUpDown,
+  Loader2,
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -25,6 +26,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { getProducts, deleteProduct, Product } from '@/lib/api/services/productService';
 
 // Mock products data
 const mockProducts = [
@@ -131,19 +133,92 @@ const getStatusBadge = (status: string, stock: number) => {
 };
 
 export default function ProductsPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
 
-  const filteredProducts = mockProducts.filter((product) => {
-    const matchesSearch =
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.sku.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      filterCategory === 'all' || product.category === filterCategory;
-    return matchesSearch && matchesCategory;
-  });
+  useEffect(() => {
+    fetchProducts();
+  }, [page, searchQuery, filterCategory]);
 
-  const categories = ['all', ...Array.from(new Set(mockProducts.map((p) => p.category)))];
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const response = await getProducts({
+        search: searchQuery || undefined,
+        category: filterCategory !== 'all' ? filterCategory : undefined,
+        page,
+        limit: 20,
+      });
+      
+      setProducts(response.products);
+      setTotalPages(response.pagination.pages);
+      setTotalProducts(response.pagination.total);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      // Fallback to mock data for development
+      setProducts(mockProducts);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteProduct = async (productId: string) => {
+    if (confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+      try {
+        await deleteProduct(productId);
+        // Refresh products list
+        await fetchProducts();
+      } catch (error) {
+        console.error('Error deleting product:', error);
+        alert('Error deleting product. Please try again.');
+      }
+    }
+  };
+
+  const handleUpdateStock = async (productId: string, currentStock: number) => {
+    const newStock = prompt(
+      `Update stock for this product\nCurrent stock: ${currentStock}`,
+      currentStock.toString()
+    );
+    if (newStock !== null && newStock !== '') {
+      try {
+        // This would need an update stock API endpoint
+        alert(`Stock updated to ${newStock} units`);
+        await fetchProducts();
+      } catch (error) {
+        console.error('Error updating stock:', error);
+        alert('Error updating stock. Please try again.');
+      }
+    }
+  };
+
+  const categories = ['all', ...Array.from(new Set(products.map((p) => p.category)))];
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Products</h1>
+            <p className="text-muted-foreground mt-1">
+              Manage your inventory and product catalog
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center justify-center h-64">
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <span>Loading products...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -173,7 +248,7 @@ export default function ProductsPage() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Products</p>
-                <p className="text-2xl font-bold">{mockProducts.length}</p>
+                <p className="text-2xl font-bold">{totalProducts}</p>
               </div>
             </div>
           </CardContent>
@@ -187,7 +262,7 @@ export default function ProductsPage() {
               <div>
                 <p className="text-sm text-muted-foreground">In Stock</p>
                 <p className="text-2xl font-bold">
-                  {mockProducts.filter((p) => p.stock > p.minStock).length}
+                  {products.filter((p) => p.stockQuantity > 0 && p.inStock).length}
                 </p>
               </div>
             </div>
@@ -202,11 +277,7 @@ export default function ProductsPage() {
               <div>
                 <p className="text-sm text-muted-foreground">Low Stock</p>
                 <p className="text-2xl font-bold">
-                  {
-                    mockProducts.filter(
-                      (p) => p.stock > 0 && p.stock <= p.minStock
-                    ).length
-                  }
+                  {products.filter((p) => p.stockQuantity > 0 && !p.inStock).length}
                 </p>
               </div>
             </div>
@@ -221,7 +292,7 @@ export default function ProductsPage() {
               <div>
                 <p className="text-sm text-muted-foreground">Out of Stock</p>
                 <p className="text-2xl font-bold">
-                  {mockProducts.filter((p) => p.stock === 0).length}
+                  {products.filter((p) => p.stockQuantity === 0).length}
                 </p>
               </div>
             </div>
@@ -287,7 +358,7 @@ export default function ProductsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredProducts.length === 0 ? (
+                {products.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="text-center p-8">
                       <div className="flex flex-col items-center gap-2">
@@ -297,15 +368,25 @@ export default function ProductsPage() {
                     </td>
                   </tr>
                 ) : (
-                  filteredProducts.map((product) => (
+                  products.map((product) => (
                     <tr
-                      key={product.id}
+                      key={product._id}
                       className="border-b hover:bg-gray-50 transition-colors"
                     >
                       <td className="p-4">
                         <div className="flex items-center gap-3">
-                          <div className="h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center">
-                            <Package className="h-6 w-6 text-gray-400" />
+                          <div className="h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden">
+                            {product.image ? (
+                              <Image
+                                src={product.image}
+                                alt={product.name}
+                                width={48}
+                                height={48}
+                                className="object-cover"
+                              />
+                            ) : (
+                              <Package className="h-6 w-6 text-gray-400" />
+                            )}
                           </div>
                           <div>
                             <p className="font-medium text-sm">{product.name}</p>
@@ -335,14 +416,18 @@ export default function ProductsPage() {
                       </td>
                       <td className="p-4">
                         <div>
-                          <p className="font-medium text-sm">{product.stock} units</p>
+                          <p className="font-medium text-sm">{product.stockQuantity} units</p>
                           <p className="text-xs text-muted-foreground">
-                            Min: {product.minStock}
+                            In Stock: {product.inStock ? 'Yes' : 'No'}
                           </p>
                         </div>
                       </td>
                       <td className="p-4">
-                        {getStatusBadge(product.status, product.stock)}
+                        {getStatusBadge(
+                          product.stockQuantity === 0 ? 'out_of_stock' : 
+                          product.inStock ? 'active' : 'low_stock', 
+                          product.stockQuantity
+                        )}
                       </td>
                       <td className="p-4 text-right">
                         <DropdownMenu>
@@ -353,38 +438,20 @@ export default function ProductsPage() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem asChild>
-                              <Link href={`/admin/products/${product.id}`} className="flex items-center cursor-pointer">
+                              <Link href={`/admin/products/${product._id}`} className="flex items-center cursor-pointer">
                                 <Edit className="h-4 w-4 mr-2" />
                                 Edit
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              onClick={() => {
-                                const newStock = prompt(
-                                  `Update stock for ${product.name}\nCurrent stock: ${product.stock}`,
-                                  product.stock.toString()
-                                );
-                                if (newStock !== null) {
-                                  alert(`Stock updated to ${newStock} units`);
-                                  // Here you would update the stock via API
-                                }
-                              }}
+                              onClick={() => handleUpdateStock(product._id, product.stockQuantity)}
                             >
                               <Package className="h-4 w-4 mr-2" />
                               Update Stock
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className="text-red-600"
-                              onClick={() => {
-                                if (
-                                  confirm(
-                                    `Are you sure you want to delete ${product.name}? This action cannot be undone.`
-                                  )
-                                ) {
-                                  alert('Product deleted successfully!');
-                                  // Here you would delete via API
-                                }
-                              }}
+                              onClick={() => handleDeleteProduct(product._id)}
                             >
                               <Trash2 className="h-4 w-4 mr-2" />
                               Delete

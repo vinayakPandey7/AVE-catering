@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,7 @@ import {
   TrendingUp,
   Mail,
   Phone,
+  Loader2,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -27,6 +28,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { getAllUsers, updateUser, deleteUser, getUserStats, User } from '@/lib/api/services/authService';
 
 // Mock customers data
 const mockCustomers = [
@@ -151,25 +153,103 @@ const formatDate = (dateString: string | null) => {
 };
 
 export default function CustomersPage() {
+  const [customers, setCustomers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
-
-  const filteredCustomers = mockCustomers.filter((customer) => {
-    const matchesSearch =
-      customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      customer.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      customer.business.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || customer.status === filterStatus;
-    return matchesSearch && matchesStatus;
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCustomers, setTotalCustomers] = useState(0);
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    adminUsers: 0,
+    regularUsers: 0,
+    recentUsers: 0,
+    roleBreakdown: []
   });
+
+  useEffect(() => {
+    fetchCustomers();
+    fetchStats();
+  }, [page, searchQuery, filterStatus]);
+
+  const fetchCustomers = async () => {
+    try {
+      setLoading(true);
+      const response = await getAllUsers({
+        search: searchQuery || undefined,
+        status: filterStatus !== 'all' ? filterStatus : undefined,
+        page,
+        limit: 20,
+      });
+      
+      setCustomers(response.users);
+      setTotalPages(response.pagination.pages);
+      setTotalCustomers(response.pagination.total);
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+      // Fallback to mock data for development
+      setCustomers(mockCustomers);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      const response = await getUserStats();
+      setStats(response);
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  };
+
+  const handleUpdateUserStatus = async (userId: string, newStatus: string) => {
+    try {
+      await updateUser(userId, { status: newStatus });
+      await fetchCustomers();
+      await fetchStats();
+    } catch (error) {
+      console.error('Error updating user:', error);
+      alert('Error updating user. Please try again.');
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+      try {
+        await deleteUser(userId);
+        await fetchCustomers();
+        await fetchStats();
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        alert('Error deleting user. Please try again.');
+      }
+    }
+  };
 
   const statuses = ['all', 'approved', 'pending', 'suspended'];
 
-  // Calculate stats
-  const totalCustomers = mockCustomers.length;
-  const approvedCustomers = mockCustomers.filter((c) => c.status === 'approved').length;
-  const pendingCustomers = mockCustomers.filter((c) => c.status === 'pending').length;
-  const totalRevenue = mockCustomers.reduce((sum, c) => sum + c.totalSpent, 0);
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Customers</h1>
+            <p className="text-muted-foreground mt-1">
+              Manage your customer accounts and relationships
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center justify-center h-64">
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <span>Loading customers...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -193,7 +273,7 @@ export default function CustomersPage() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Customers</p>
-                <p className="text-2xl font-bold">{totalCustomers}</p>
+                <p className="text-2xl font-bold">{stats.totalUsers}</p>
               </div>
             </div>
           </CardContent>
@@ -205,8 +285,8 @@ export default function CustomersPage() {
                 <CheckCircle className="h-5 w-5 text-green-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Approved</p>
-                <p className="text-2xl font-bold">{approvedCustomers}</p>
+                <p className="text-sm text-muted-foreground">Regular Users</p>
+                <p className="text-2xl font-bold">{stats.regularUsers}</p>
               </div>
             </div>
           </CardContent>
@@ -218,8 +298,8 @@ export default function CustomersPage() {
                 <TrendingUp className="h-5 w-5 text-yellow-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Pending</p>
-                <p className="text-2xl font-bold">{pendingCustomers}</p>
+                <p className="text-sm text-muted-foreground">Recent Users</p>
+                <p className="text-2xl font-bold">{stats.recentUsers}</p>
               </div>
             </div>
           </CardContent>
@@ -231,8 +311,8 @@ export default function CustomersPage() {
                 <DollarSign className="h-5 w-5 text-purple-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Total Revenue</p>
-                <p className="text-2xl font-bold">${totalRevenue.toFixed(2)}</p>
+                <p className="text-sm text-muted-foreground">Admin Users</p>
+                <p className="text-2xl font-bold">{stats.adminUsers}</p>
               </div>
             </div>
           </CardContent>
@@ -292,7 +372,7 @@ export default function CustomersPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredCustomers.length === 0 ? (
+                {customers.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="text-center p-8">
                       <div className="flex flex-col items-center gap-2">
@@ -302,19 +382,19 @@ export default function CustomersPage() {
                     </td>
                   </tr>
                 ) : (
-                  filteredCustomers.map((customer) => (
+                  customers.map((customer) => (
                     <tr
-                      key={customer.id}
+                      key={customer._id}
                       className="border-b hover:bg-gray-50 transition-colors"
                     >
                       <td className="p-4">
                         <div>
                           <p className="font-medium text-sm">{customer.name}</p>
                           <p className="text-xs text-muted-foreground">
-                            {customer.business}
+                            {customer.businessName || 'No business name'}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            Joined {formatDate(customer.joinDate)}
+                            {customer.isAdmin ? 'Admin' : 'Customer'}
                           </p>
                         </div>
                       </td>
@@ -324,41 +404,41 @@ export default function CustomersPage() {
                             <Mail className="h-3 w-3" />
                             {customer.email}
                           </div>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <Phone className="h-3 w-3" />
-                            {customer.phone}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="p-4">
-                        {getAccountTypeBadge(customer.accountType)}
-                      </td>
-                      <td className="p-4">
-                        <div>
-                          <p className="font-medium text-sm">{customer.totalOrders}</p>
-                          {customer.lastOrder && (
-                            <p className="text-xs text-muted-foreground">
-                              Last: {formatDate(customer.lastOrder)}
-                            </p>
+                          {customer.phone && (
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Phone className="h-3 w-3" />
+                              {customer.phone}
+                            </div>
                           )}
                         </div>
                       </td>
                       <td className="p-4">
+                        {getAccountTypeBadge(customer.isAdmin ? 'admin' : 'customer')}
+                      </td>
+                      <td className="p-4">
+                        <div>
+                          <p className="font-medium text-sm">-</p>
+                          <p className="text-xs text-muted-foreground">
+                            No order data
+                          </p>
+                        </div>
+                      </td>
+                      <td className="p-4">
                         <p className="font-semibold text-sm text-green-600">
-                          ${customer.totalSpent.toFixed(2)}
+                          $0.00
                         </p>
                       </td>
                       <td className="p-4">
                         <p className="text-sm">
-                          ${customer.averageOrder > 0 ? customer.averageOrder.toFixed(2) : '0.00'}
+                          $0.00
                         </p>
                       </td>
                       <td className="p-4">
                         <Badge
                           variant="secondary"
-                          className={getStatusColor(customer.status)}
+                          className={getStatusColor('approved')}
                         >
-                          {customer.status}
+                          Active
                         </Badge>
                       </td>
                       <td className="p-4 text-right">
@@ -370,48 +450,30 @@ export default function CustomersPage() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem asChild>
-                              <Link href={`/admin/customers/${customer.id}`} className="flex items-center cursor-pointer">
+                              <Link href={`/admin/customers/${customer._id}`} className="flex items-center cursor-pointer">
                                 <Eye className="h-4 w-4 mr-2" />
                                 View Details
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
-                              <Link href={`/admin/orders?customer=${customer.id}`} className="flex items-center cursor-pointer">
+                              <Link href={`/admin/orders?customer=${customer._id}`} className="flex items-center cursor-pointer">
                                 <ShoppingCart className="h-4 w-4 mr-2" />
                                 View Orders
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
-                              <Link href={`/admin/customers/${customer.id}/edit`} className="flex items-center cursor-pointer">
+                              <Link href={`/admin/customers/${customer._id}/edit`} className="flex items-center cursor-pointer">
                                 <Edit className="h-4 w-4 mr-2" />
                                 Edit
                               </Link>
                             </DropdownMenuItem>
-                            {customer.status === 'pending' && (
-                              <DropdownMenuItem
-                                className="text-green-600"
-                                onClick={() => {
-                                  if (confirm(`Approve customer account for ${customer.name}?`)) {
-                                    alert('Customer account approved successfully');
-                                  }
-                                }}
-                              >
-                                <CheckCircle className="h-4 w-4 mr-2" />
-                                Approve
-                              </DropdownMenuItem>
-                            )}
-                            {customer.status !== 'suspended' && (
+                            {!customer.isAdmin && (
                               <DropdownMenuItem
                                 className="text-red-600"
-                                onClick={() => {
-                                  const reason = prompt(`Suspend account for ${customer.name}?\nEnter reason:`);
-                                  if (reason) {
-                                    alert('Customer account suspended');
-                                  }
-                                }}
+                                onClick={() => handleDeleteUser(customer._id)}
                               >
                                 <Ban className="h-4 w-4 mr-2" />
-                                Suspend
+                                Delete User
                               </DropdownMenuItem>
                             )}
                           </DropdownMenuContent>

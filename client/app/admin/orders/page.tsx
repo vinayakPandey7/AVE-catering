@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,7 @@ import {
   DollarSign,
   ShoppingCart,
   AlertCircle,
+  Loader2,
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -27,6 +28,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { getAllOrders, updateOrder, deleteOrder, getOrderStats, Order } from '@/lib/api/services/orderService';
 
 // Mock orders data
 const mockOrders = [
@@ -185,27 +187,102 @@ const formatDate = (dateString: string) => {
 };
 
 export default function OrdersPage() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
-
-  const filteredOrders = mockOrders.filter((order) => {
-    const matchesSearch =
-      order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.customer.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || order.status === filterStatus;
-    return matchesSearch && matchesStatus;
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [stats, setStats] = useState({
+    totalOrders: 0,
+    totalRevenue: 0,
+    recentOrders: 0,
+    statusBreakdown: []
   });
+
+  useEffect(() => {
+    fetchOrders();
+    fetchStats();
+  }, [page, searchQuery, filterStatus]);
+
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      const response = await getAllOrders({
+        search: searchQuery || undefined,
+        status: filterStatus !== 'all' ? filterStatus : undefined,
+        page,
+        limit: 20,
+      });
+      
+      setOrders(response.orders);
+      setTotalPages(response.pagination.pages);
+      setTotalOrders(response.pagination.total);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      // Fallback to mock data for development
+      setOrders(mockOrders);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      const response = await getOrderStats();
+      setStats(response);
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  };
+
+  const handleUpdateOrderStatus = async (orderId: string, newStatus: string) => {
+    try {
+      await updateOrder(orderId, { status: newStatus });
+      await fetchOrders();
+      await fetchStats();
+    } catch (error) {
+      console.error('Error updating order:', error);
+      alert('Error updating order. Please try again.');
+    }
+  };
+
+  const handleDeleteOrder = async (orderId: string) => {
+    if (confirm('Are you sure you want to delete this order? This action cannot be undone.')) {
+      try {
+        await deleteOrder(orderId);
+        await fetchOrders();
+        await fetchStats();
+      } catch (error) {
+        console.error('Error deleting order:', error);
+        alert('Error deleting order. Please try again.');
+      }
+    }
+  };
 
   const statuses = ['all', 'pending', 'processing', 'shipped', 'delivered', 'cancelled'];
 
-  // Calculate stats
-  const totalRevenue = mockOrders
-    .filter((o) => o.status !== 'cancelled')
-    .reduce((sum, o) => sum + o.total, 0);
-  const pendingOrders = mockOrders.filter((o) => o.status === 'pending').length;
-  const processingOrders = mockOrders.filter((o) => o.status === 'processing').length;
-  const shippedOrders = mockOrders.filter((o) => o.status === 'shipped').length;
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Orders</h1>
+            <p className="text-muted-foreground mt-1">
+              Manage and process customer orders
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center justify-center h-64">
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <span>Loading orders...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -235,7 +312,7 @@ export default function OrdersPage() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Revenue</p>
-                <p className="text-2xl font-bold">${totalRevenue.toFixed(2)}</p>
+                <p className="text-2xl font-bold">${stats.totalRevenue.toFixed(2)}</p>
               </div>
             </div>
           </CardContent>
@@ -248,7 +325,9 @@ export default function OrdersPage() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Pending</p>
-                <p className="text-2xl font-bold">{pendingOrders}</p>
+                <p className="text-2xl font-bold">
+                  {stats.statusBreakdown.find(s => s._id === 'pending')?.count || 0}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -261,7 +340,9 @@ export default function OrdersPage() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Processing</p>
-                <p className="text-2xl font-bold">{processingOrders}</p>
+                <p className="text-2xl font-bold">
+                  {stats.statusBreakdown.find(s => s._id === 'processing')?.count || 0}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -274,7 +355,9 @@ export default function OrdersPage() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Shipped</p>
-                <p className="text-2xl font-bold">{shippedOrders}</p>
+                <p className="text-2xl font-bold">
+                  {stats.statusBreakdown.find(s => s._id === 'shipped')?.count || 0}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -334,7 +417,7 @@ export default function OrdersPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredOrders.length === 0 ? (
+                {orders.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="text-center p-8">
                       <div className="flex flex-col items-center gap-2">
@@ -344,50 +427,50 @@ export default function OrdersPage() {
                     </td>
                   </tr>
                 ) : (
-                  filteredOrders.map((order) => (
+                  orders.map((order) => (
                     <tr
-                      key={order.id}
+                      key={order._id}
                       className="border-b hover:bg-gray-50 transition-colors"
                     >
                       <td className="p-4">
                         <code className="text-sm font-medium bg-gray-100 px-2 py-1 rounded">
-                          {order.id}
+                          {order._id.slice(-8).toUpperCase()}
                         </code>
                       </td>
                       <td className="p-4">
                         <div>
-                          <p className="font-medium text-sm">{order.customer.name}</p>
+                          <p className="font-medium text-sm">{order.user.name}</p>
                           <p className="text-xs text-muted-foreground">
-                            {order.customer.business}
+                            {order.user.email}
                           </p>
                         </div>
                       </td>
                       <td className="p-4">
-                        <p className="text-sm">{formatDate(order.orderDate)}</p>
+                        <p className="text-sm">{formatDate(order.createdAt)}</p>
                       </td>
                       <td className="p-4">
-                        <p className="text-sm">{order.items} items</p>
+                        <p className="text-sm">{order.orderItems.length} items</p>
                       </td>
                       <td className="p-4">
                         <p className="font-semibold text-sm">
-                          ${order.total.toFixed(2)}
+                          ${order.totalPrice.toFixed(2)}
                         </p>
                       </td>
                       <td className="p-4">
                         <Badge
                           variant="secondary"
-                          className={getPaymentStatusColor(order.paymentStatus)}
+                          className={getPaymentStatusColor(order.isPaid ? 'paid' : 'pending')}
                         >
-                          {order.paymentStatus}
+                          {order.isPaid ? 'paid' : 'pending'}
                         </Badge>
                       </td>
                       <td className="p-4">
                         <Badge
                           variant="outline"
-                          className={`${getStatusColor(order.status)} flex items-center gap-1 w-fit`}
+                          className={`${getStatusColor(order.isDelivered ? 'delivered' : 'pending')} flex items-center gap-1 w-fit`}
                         >
-                          {getStatusIcon(order.status)}
-                          {order.status}
+                          {getStatusIcon(order.isDelivered ? 'delivered' : 'pending')}
+                          {order.isDelivered ? 'delivered' : 'pending'}
                         </Badge>
                       </td>
                       <td className="p-4 text-right">
@@ -399,7 +482,7 @@ export default function OrdersPage() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem asChild>
-                              <Link href={`/admin/orders/${order.id}`} className="flex items-center cursor-pointer">
+                              <Link href={`/admin/orders/${order._id}`} className="flex items-center cursor-pointer">
                                 <Eye className="h-4 w-4 mr-2" />
                                 View Details
                               </Link>
@@ -412,24 +495,24 @@ export default function OrdersPage() {
                               <Printer className="h-4 w-4 mr-2" />
                               Print Invoice
                             </DropdownMenuItem>
-                            {order.status === 'pending' && (
+                            {!order.isDelivered && (
                               <DropdownMenuItem
                                 onClick={() => {
-                                  if (confirm(`Process order ${order.id}?`)) {
-                                    alert('Order status updated to Processing');
+                                  if (confirm(`Mark order as delivered?`)) {
+                                    handleUpdateOrderStatus(order._id, 'delivered');
                                   }
                                 }}
                               >
                                 <CheckCircle className="h-4 w-4 mr-2" />
-                                Process Order
+                                Mark as Delivered
                               </DropdownMenuItem>
                             )}
-                            {order.status === 'processing' && (
+                            {!order.isDelivered && (
                               <DropdownMenuItem
                                 onClick={() => {
                                   const tracking = prompt('Enter tracking number:');
                                   if (tracking) {
-                                    alert(`Order marked as shipped with tracking: ${tracking}`);
+                                    handleUpdateOrderStatus(order._id, 'shipped');
                                   }
                                 }}
                               >
@@ -437,20 +520,13 @@ export default function OrdersPage() {
                                 Mark as Shipped
                               </DropdownMenuItem>
                             )}
-                            {['pending', 'processing'].includes(order.status) && (
-                              <DropdownMenuItem
-                                className="text-red-600"
-                                onClick={() => {
-                                  const reason = prompt(`Cancel order ${order.id}?\nEnter reason:`);
-                                  if (reason) {
-                                    alert('Order cancelled successfully');
-                                  }
-                                }}
-                              >
-                                <XCircle className="h-4 w-4 mr-2" />
-                                Cancel Order
-                              </DropdownMenuItem>
-                            )}
+                            <DropdownMenuItem
+                              className="text-red-600"
+                              onClick={() => handleDeleteOrder(order._id)}
+                            >
+                              <XCircle className="h-4 w-4 mr-2" />
+                              Delete Order
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </td>

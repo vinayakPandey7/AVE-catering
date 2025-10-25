@@ -14,6 +14,9 @@ import categoryRoutes from "./routes/categoryRoutes.js";
 import subcategoryRoutes from "./routes/subcategoryRoutes.js";
 import subSubcategoryRoutes from "./routes/subSubcategoryRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
+import offerRoutes from "./routes/offerRoutes.js";
+import reportRoutes from "./routes/reportRoutes.js";
+import settingsRoutes from "./routes/settingsRoutes.js";
 import logger from "./utils/logger.js";
 
 // Load environment variables
@@ -89,12 +92,15 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/subcategories", subcategoryRoutes);
 app.use("/api/subsubcategories", subSubcategoryRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/offers", offerRoutes);
+app.use("/api/reports", reportRoutes);
+app.use("/api/settings", settingsRoutes);
 
 // Error handling middleware
 app.use(notFound);
 app.use(errorHandler);
 
-const PORT = parseInt(process.env.PORT || "5000");
+const PORT = parseInt(process.env.PORT || "5001");
 
 // Start server
 const server = app.listen(PORT, "0.0.0.0", () => {

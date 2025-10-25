@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAppDispatch } from '@/lib/store/hooks';
+import { registerAsync } from '@/lib/store/slices/authSlice';
 import { toast, Toaster } from 'sonner';
 
 interface FormData {
@@ -19,6 +21,7 @@ interface FormData {
 
 export default function RegisterPage(): React.JSX.Element {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
@@ -39,12 +42,24 @@ export default function RegisterPage(): React.JSX.Element {
 
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      toast.success('Registration successful! Please wait for approval.');
+    try {
+      // Use real API call
+      await dispatch(registerAsync({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        businessName: formData.businessName,
+        phone: formData.phone,
+      })).unwrap();
+      
+      toast.success('Registration successful! You are now logged in.');
+      router.push('/');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Registration failed';
+      toast.error(errorMessage);
+    } finally {
       setIsLoading(false);
-      router.push('/auth/login');
-    }, 1500);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {

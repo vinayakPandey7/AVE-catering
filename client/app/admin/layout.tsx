@@ -21,6 +21,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { ServerStatusCheck } from '@/lib/components/ServerStatusCheck';
 
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
@@ -29,7 +30,7 @@ const navigation = [
   { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
   { name: 'Customers', href: '/admin/customers', icon: Users },
   { name: 'Offers & Coupons', href: '/admin/offers', icon: Tag },
-  { name: 'Reports', href: '/admin/reports', icon: BarChart3 },
+  // { name: 'Reports', href: '/admin/reports', icon: BarChart3 },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 
@@ -175,7 +176,10 @@ export default function AdminLayout({
 
         {/* Page content */}
         <main className="p-4 sm:p-6 lg:p-8 min-h-screen">
-          {children}
+          <div className="space-y-6">
+            <ServerStatusCheck />
+            {children}
+          </div>
         </main>
       </div>
     </div>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,111 +15,43 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 import Link from 'next/link';
+import { getOrderStats } from '@/lib/api/services/orderService';
+import { getUserStats } from '@/lib/api/services/authService';
+import { getOfferStats } from '@/lib/api/services/offerService';
+import { getProducts } from '@/lib/api/services/productService';
+import { getAllOrders } from '@/lib/api/services/orderService';
 
-// Mock data - will be replaced with real data from API
-const stats = [
-  {
-    name: 'Total Revenue',
-    value: '$45,231.89',
-    change: '+20.1%',
-    trend: 'up',
-    icon: DollarSign,
-    color: 'text-green-600',
-    bgColor: 'bg-gradient-to-br from-green-50 to-green-100',
-    iconBg: 'bg-green-500',
-  },
-  {
-    name: 'Orders',
-    value: '2,350',
-    change: '+180 today',
-    trend: 'up',
-    icon: ShoppingCart,
-    color: 'text-[#006e9d]',
-    bgColor: 'bg-gradient-to-br from-blue-50 to-blue-100',
-    iconBg: 'bg-[#006e9d]',
-  },
-  {
-    name: 'Products',
-    value: '1,234',
-    change: '21 low stock',
-    trend: 'warning',
-    icon: Package,
-    color: 'text-purple-600',
-    bgColor: 'bg-gradient-to-br from-purple-50 to-purple-100',
-    iconBg: 'bg-purple-500',
-  },
-  {
-    name: 'Customers',
-    value: '573',
-    change: '+48 this week',
-    trend: 'up',
-    icon: Users,
-    color: 'text-orange-600',
-    bgColor: 'bg-gradient-to-br from-orange-50 to-orange-100',
-    iconBg: 'bg-orange-500',
-  },
-];
+interface DashboardStats {
+  totalRevenue: number;
+  totalOrders: number;
+  totalProducts: number;
+  totalCustomers: number;
+  recentOrders: number;
+  lowStockCount: number;
+}
 
-const recentOrders = [
-  {
-    id: 'ORD-001',
-    customer: 'John Doe',
-    email: 'john@example.com',
-    total: 234.50,
-    status: 'pending',
-    date: '2 mins ago',
-  },
-  {
-    id: 'ORD-002',
-    customer: 'Jane Smith',
-    email: 'jane@example.com',
-    total: 567.80,
-    status: 'processing',
-    date: '15 mins ago',
-  },
-  {
-    id: 'ORD-003',
-    customer: 'Bob Johnson',
-    email: 'bob@example.com',
-    total: 123.00,
-    status: 'shipped',
-    date: '1 hour ago',
-  },
-  {
-    id: 'ORD-004',
-    customer: 'Alice Brown',
-    email: 'alice@example.com',
-    total: 890.25,
-    status: 'delivered',
-    date: '3 hours ago',
-  },
-  {
-    id: 'ORD-005',
-    customer: 'Charlie Wilson',
-    email: 'charlie@example.com',
-    total: 456.90,
-    status: 'cancelled',
-    date: '5 hours ago',
-  },
-];
+interface RecentOrder {
+  _id: string;
+  user: {
+    name: string;
+    email: string;
+  };
+  totalPrice: number;
+  isDelivered: boolean;
+  createdAt: string;
+}
 
-const lowStockProducts = [
-  { id: 1, name: 'Coca-Cola 24pk', stock: 12, minStock: 50, category: 'Beverages' },
-  { id: 2, name: 'Lay\'s Chips Box', stock: 8, minStock: 30, category: 'Snacks' },
-  { id: 3, name: 'Tide Detergent', stock: 5, minStock: 20, category: 'Cleaning' },
-  { id: 4, name: 'Rice 50lb Bag', stock: 3, minStock: 15, category: 'Grocery' },
-];
-
-const topProducts = [
-  { name: 'Coca-Cola 24pk', sales: 245, revenue: 2450 },
-  { name: 'Water Bottles 24pk', sales: 198, revenue: 1980 },
-  { name: 'Lay\'s Chips Box', sales: 156, revenue: 1560 },
-  { name: 'Paper Towels 12pk', sales: 134, revenue: 1340 },
-  { name: 'Tide Detergent', sales: 112, revenue: 1120 },
-];
+interface LowStockProduct {
+  _id: string;
+  name: string;
+  countInStock: number;
+  minStock: number;
+  category: string;
+}
 
 const getStatusIcon = (status: string) => {
   switch (status) {
@@ -155,6 +88,140 @@ const getStatusColor = (status: string) => {
 };
 
 export default function AdminDashboard() {
+  const [stats, setStats] = useState<DashboardStats>({
+    totalRevenue: 0,
+    totalOrders: 0,
+    totalProducts: 0,
+    totalCustomers: 0,
+    recentOrders: 0,
+    lowStockCount: 0,
+  });
+  const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
+  const [lowStockProducts, setLowStockProducts] = useState<LowStockProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch all stats in parallel
+      const [orderStats, userStats, productData, recentOrdersData] = await Promise.all([
+        getOrderStats(),
+        getUserStats(),
+        getProducts({ limit: 1000 }), // Get all products to check stock
+        getAllOrders({ limit: 5 }), // Get recent orders
+      ]);
+
+      // Calculate low stock products
+      const lowStock = productData.products.filter(
+        (product: any) => product.countInStock <= (product.minStock || 10)
+      );
+
+      setStats({
+        totalRevenue: orderStats.totalRevenue,
+        totalOrders: orderStats.totalOrders,
+        totalProducts: productData.pagination.total,
+        totalCustomers: userStats.totalUsers,
+        recentOrders: orderStats.recentOrders,
+        lowStockCount: lowStock.length,
+      });
+
+      setRecentOrders(recentOrdersData.orders);
+      setLowStockProducts(lowStock.slice(0, 4)); // Show top 4 low stock items
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(amount);
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return 'Just now';
+    if (diffInHours < 24) return `${diffInHours} hours ago`;
+    return date.toLocaleDateString();
+  };
+
+  const getOrderStatus = (isDelivered: boolean) => {
+    return isDelivered ? 'delivered' : 'pending';
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground mt-1">
+            Welcome back! Here's what's happening with your store today.
+          </p>
+        </div>
+        <div className="flex items-center justify-center h-64">
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <span>Loading dashboard...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const statsData = [
+    {
+      name: 'Total Revenue',
+      value: formatCurrency(stats.totalRevenue),
+      change: `+${stats.recentOrders} recent`,
+      trend: 'up',
+      icon: DollarSign,
+      color: 'text-green-600',
+      bgColor: 'bg-gradient-to-br from-green-50 to-green-100',
+      iconBg: 'bg-green-500',
+    },
+    {
+      name: 'Orders',
+      value: stats.totalOrders.toString(),
+      change: `${stats.recentOrders} recent`,
+      trend: 'up',
+      icon: ShoppingCart,
+      color: 'text-[#006e9d]',
+      bgColor: 'bg-gradient-to-br from-blue-50 to-blue-100',
+      iconBg: 'bg-[#006e9d]',
+    },
+    {
+      name: 'Products',
+      value: stats.totalProducts.toString(),
+      change: `${stats.lowStockCount} low stock`,
+      trend: stats.lowStockCount > 0 ? 'warning' : 'up',
+      icon: Package,
+      color: 'text-purple-600',
+      bgColor: 'bg-gradient-to-br from-purple-50 to-purple-100',
+      iconBg: 'bg-purple-500',
+    },
+    {
+      name: 'Customers',
+      value: stats.totalCustomers.toString(),
+      change: 'Active users',
+      trend: 'up',
+      icon: Users,
+      color: 'text-orange-600',
+      bgColor: 'bg-gradient-to-br from-orange-50 to-orange-100',
+      iconBg: 'bg-orange-500',
+    },
+  ];
+
   return (
     <div className="space-y-8">
       {/* Page header */}
@@ -167,7 +234,7 @@ export default function AdminDashboard() {
 
       {/* Stats grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
+        {statsData.map((stat) => (
           <Card key={stat.name} className={`${stat.bgColor} border-0 shadow-md hover:shadow-xl transition-all duration-300`}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -221,40 +288,47 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentOrders.map((order) => (
-                <div
-                  key={order.id}
-                  className="flex items-center justify-between p-4 rounded-lg border hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-center gap-4 flex-1">
-                    <div className="flex items-center justify-center">
-                      {getStatusIcon(order.status)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium text-sm">{order.id}</p>
-                        <Badge
-                          variant="secondary"
-                          className={`text-xs ${getStatusColor(order.status)}`}
-                        >
-                          {order.status}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground truncate">
-                        {order.customer}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {order.date}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-sm">
-                      ${order.total.toFixed(2)}
-                    </p>
-                  </div>
+              {recentOrders.length === 0 ? (
+                <div className="text-center py-8">
+                  <ShoppingCart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">No recent orders</p>
                 </div>
-              ))}
+              ) : (
+                recentOrders.map((order) => (
+                  <div
+                    key={order._id}
+                    className="flex items-center justify-between p-4 rounded-lg border hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-4 flex-1">
+                      <div className="flex items-center justify-center">
+                        {getStatusIcon(getOrderStatus(order.isDelivered))}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-sm">{order._id.slice(-8).toUpperCase()}</p>
+                          <Badge
+                            variant="secondary"
+                            className={`text-xs ${getStatusColor(getOrderStatus(order.isDelivered))}`}
+                          >
+                            {getOrderStatus(order.isDelivered)}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground truncate">
+                          {order.user.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatDate(order.createdAt)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-sm">
+                        {formatCurrency(order.totalPrice)}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
@@ -280,76 +354,91 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {lowStockProducts.map((product) => (
-                <div
-                  key={product.id}
-                  className="flex items-center justify-between p-4 rounded-lg border border-yellow-200 bg-yellow-50"
-                >
-                  <div className="flex-1">
-                    <p className="font-medium text-sm">{product.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {product.category}
-                    </p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden max-w-[100px]">
-                        <div
-                          className="h-full bg-yellow-500"
-                          style={{
-                            width: `${(product.stock / product.minStock) * 100}%`,
-                          }}
-                        />
-                      </div>
-                      <span className="text-xs font-medium text-yellow-700">
-                        {product.stock} left
-                      </span>
-                    </div>
-                  </div>
-                  <Link href={`/admin/products/${product.id}`}>
-                    <Button size="sm" variant="outline">
-                      Restock
-                    </Button>
-                  </Link>
+              {lowStockProducts.length === 0 ? (
+                <div className="text-center py-8">
+                  <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                  <p className="text-muted-foreground">All products are well stocked!</p>
                 </div>
-              ))}
+              ) : (
+                lowStockProducts.map((product) => (
+                  <div
+                    key={product._id}
+                    className="flex items-center justify-between p-4 rounded-lg border border-yellow-200 bg-yellow-50"
+                  >
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">{product.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {product.category}
+                      </p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden max-w-[100px]">
+                          <div
+                            className="h-full bg-yellow-500"
+                            style={{
+                              width: `${Math.min((product.countInStock / product.minStock) * 100, 100)}%`,
+                            }}
+                          />
+                        </div>
+                        <span className="text-xs font-medium text-yellow-700">
+                          {product.countInStock} left
+                        </span>
+                      </div>
+                    </div>
+                    <Link href={`/admin/products/${product._id}`}>
+                      <Button size="sm" variant="outline">
+                        Restock
+                      </Button>
+                    </Link>
+                  </div>
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Top products */}
+      {/* Quick Actions */}
       <Card className="border-0 shadow-md">
         <CardHeader className="bg-gradient-to-r from-[#006e9d]/5 to-transparent">
-          <CardTitle className="text-[#006e9d]">Top Selling Products</CardTitle>
+          <CardTitle className="text-[#006e9d]">Quick Actions</CardTitle>
           <p className="text-sm text-muted-foreground mt-1">
-            Best performing products this month
+            Common administrative tasks
           </p>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {topProducts.map((product, index) => (
-              <div
-                key={product.name}
-                className="flex items-center justify-between p-4 rounded-lg border border-gray-100 hover:bg-[#006e9d]/5 hover:border-[#006e9d]/20 transition-all duration-200"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center justify-center h-8 w-8 rounded-full bg-gradient-to-br from-[#006e9d] to-[#004d6f] text-white font-semibold text-sm shadow-md">
-                    #{index + 1}
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">{product.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {product.sales} units sold
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold text-sm text-green-600">
-                    ${product.revenue.toFixed(2)}
-                  </p>
-                  <p className="text-xs text-muted-foreground">Revenue</p>
-                </div>
-              </div>
-            ))}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Link href="/admin/products/new">
+              <Card className="border border-gray-200 hover:border-[#006e9d] hover:shadow-md transition-all cursor-pointer">
+                <CardContent className="p-4 text-center">
+                  <Package className="h-8 w-8 text-[#006e9d] mx-auto mb-2" />
+                  <p className="font-medium text-sm">Add Product</p>
+                </CardContent>
+              </Card>
+            </Link>
+            <Link href="/admin/offers/new">
+              <Card className="border border-gray-200 hover:border-[#006e9d] hover:shadow-md transition-all cursor-pointer">
+                <CardContent className="p-4 text-center">
+                  <DollarSign className="h-8 w-8 text-[#006e9d] mx-auto mb-2" />
+                  <p className="font-medium text-sm">Create Offer</p>
+                </CardContent>
+              </Card>
+            </Link>
+            <Link href="/admin/reports">
+              <Card className="border border-gray-200 hover:border-[#006e9d] hover:shadow-md transition-all cursor-pointer">
+                <CardContent className="p-4 text-center">
+                  <TrendingUp className="h-8 w-8 text-[#006e9d] mx-auto mb-2" />
+                  <p className="font-medium text-sm">View Reports</p>
+                </CardContent>
+              </Card>
+            </Link>
+            <Link href="/admin/settings">
+              <Card className="border border-gray-200 hover:border-[#006e9d] hover:shadow-md transition-all cursor-pointer">
+                <CardContent className="p-4 text-center">
+                  <AlertCircle className="h-8 w-8 text-[#006e9d] mx-auto mb-2" />
+                  <p className="font-medium text-sm">Settings</p>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
         </CardContent>
       </Card>
