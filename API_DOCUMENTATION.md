@@ -279,29 +279,215 @@ API is running...
 
 **POST** `/products`
 
-- **Description**: Create a new product (Admin only)
-- **Access**: Private/Admin (only admin@test.com)
+- **Description**: Create a new product with dynamic category integration (Admin only)
+- **Access**: Private/Admin (requires JWT token)
 - **Content-Type**: `multipart/form-data`
 - **Form Data**:
 
 ```
-name: Product Name
-sku: SKU123 (must be unique)
-category: Beverages
-brand: Brand Name
-price: 10.99
-pricePerCase: 120.00
-packSize: 12 x 500ml
-unit: Case
-description: Product description
-stockQuantity: 50
-image: [file upload - required]
+name: Product Name (required)
+sku: SKU123 (required, must be unique)
+category: Main Category Name (optional - for main category only)
+subcategory: Subcategory Name (optional - for subcategory)
+subSubcategory: Sub-subcategory Name (optional - for sub-subcategory)
+brand: Brand Name (required)
+price: 10.99 (required)
+pricePerCase: 120.00 (required)
+packSize: 12 x 500ml (required)
+unit: Case (required)
+description: Product description (required)
+stockQuantity: 50 (optional, default: 0)
+image: [file upload] (optional - will use placeholder if not provided)
 ```
 
-- **Response**: Created product object
-- **Error Codes**: 400 (SKU exists, image required), 401 (Unauthorized), 403 (Admin required)
+- **Category Selection Options**:
+  - **Main Category Only**: Provide `category` field
+  - **Subcategory**: Provide `subcategory` field (will auto-detect parent category)
+  - **Sub-subcategory**: Provide `subSubcategory` field (will auto-detect full hierarchy)
 
-### 5. Update Product
+- **Response**: Created product object with category references
+- **Error Codes**: 
+  - 400 (SKU exists, category not found, invalid category hierarchy)
+  - 401 (Unauthorized)
+  - 403 (Admin required)
+
+### 5. Get Available Categories for Product Creation
+
+**GET** `/products/categories/available`
+
+- **Description**: Get all active categories with full hierarchy for product creation forms
+- **Access**: Public
+- **Response**:
+
+```json
+[
+  {
+    "_id": "category_id",
+    "name": "Beverages",
+    "slug": "beverages",
+    "description": "All types of beverages",
+    "image": "cloudinary_image_url",
+    "displayOrder": 1,
+    "isActive": true,
+    "subcategories": [
+      {
+        "_id": "subcategory_id",
+        "name": "Soda",
+        "slug": "soda",
+        "description": "Carbonated soft drinks",
+        "parentCategory": "category_id",
+        "displayOrder": 1,
+        "subcategories": [
+          {
+            "_id": "subsubcategory_id",
+            "name": "Cola",
+            "slug": "cola",
+            "description": "Cola drinks",
+            "parentSubcategory": "subcategory_id",
+            "displayOrder": 1
+          }
+        ]
+      }
+    ]
+  }
+]
+```
+
+- **Use Case**: Frontend can use this to build category selection dropdowns in product creation forms
+
+#### Frontend Integration Example
+
+```javascript
+// Get available categories for product creation form
+const getAvailableCategories = async () => {
+  const response = await fetch('/api/products/categories/available');
+  return response.json();
+};
+
+// Create product with dynamic category
+const createProduct = async (productData, token) => {
+  const formData = new FormData();
+  
+  // Add all product fields
+  Object.keys(productData).forEach(key => {
+    if (key !== 'image' && productData[key] !== null && productData[key] !== undefined) {
+      formData.append(key, productData[key]);
+    }
+  });
+  
+  // Add image if provided
+  if (productData.image) {
+    formData.append('image', productData.image);
+  }
+  
+  const response = await fetch('/api/products', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    body: formData,
+  });
+  
+  return response.json();
+};
+
+// React component example
+const ProductCreationForm = () => {
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedSubcategory, setSelectedSubcategory] = useState('');
+  const [selectedSubSubcategory, setSelectedSubSubcategory] = useState('');
+  
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await getAvailableCategories();
+        setCategories(data);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+    
+    fetchCategories();
+  }, []);
+  
+  const handleSubmit = async (formData) => {
+    try {
+      const productData = {
+        ...formData,
+        category: selectedCategory,
+        subcategory: selectedSubcategory,
+        subSubcategory: selectedSubSubcategory,
+      };
+      
+      const result = await createProduct(productData, userToken);
+      console.log('Product created:', result);
+    } catch (error) {
+      console.error('Error creating product:', error);
+    }
+  };
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      {/* Category selection dropdowns */}
+      <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
+        <option value="">Select Category</option>
+        {categories.map(category => (
+          <option key={category._id} value={category.name}>
+            {category.name}
+          </option>
+        ))}
+      </select>
+      
+      {/* Subcategory dropdown (populated based on selected category) */}
+      {selectedCategory && (
+        <select value={selectedSubcategory} onChange={(e) => setSelectedSubcategory(e.target.value)}>
+          <option value="">Select Subcategory</option>
+          {categories
+            .find(cat => cat.name === selectedCategory)
+            ?.subcategories?.map(sub => (
+              <option key={sub._id} value={sub.name}>
+                {sub.name}
+              </option>
+            ))}
+        </select>
+      )}
+      
+      {/* Sub-subcategory dropdown (populated based on selected subcategory) */}
+      {selectedSubcategory && (
+        <select value={selectedSubSubcategory} onChange={(e) => setSelectedSubSubcategory(e.target.value)}>
+          <option value="">Select Sub-subcategory</option>
+          {categories
+            .find(cat => cat.name === selectedCategory)
+            ?.subcategories
+            ?.find(sub => sub.name === selectedSubcategory)
+            ?.subcategories?.map(subSub => (
+              <option key={subSub._id} value={subSub.name}>
+                {subSub.name}
+              </option>
+            ))}
+        </select>
+      )}
+      
+      {/* Other product fields */}
+      <input name="name" placeholder="Product Name" required />
+      <input name="sku" placeholder="SKU" required />
+      <input name="brand" placeholder="Brand" required />
+      <input name="price" type="number" placeholder="Price" required />
+      <input name="pricePerCase" type="number" placeholder="Price Per Case" required />
+      <input name="packSize" placeholder="Pack Size" required />
+      <input name="unit" placeholder="Unit" required />
+      <textarea name="description" placeholder="Description" required />
+      <input name="stockQuantity" type="number" placeholder="Stock Quantity" />
+      <input name="image" type="file" accept="image/*" />
+      
+      <button type="submit">Create Product</button>
+    </form>
+  );
+};
+```
+
+### 6. Update Product
 
 **PUT** `/products/:id`
 

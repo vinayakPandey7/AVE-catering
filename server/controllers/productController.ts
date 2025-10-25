@@ -2,6 +2,9 @@ import asyncHandler from "express-async-handler";
 import mongoose from "mongoose";
 import { Request } from "express";
 import Product from "../models/productModel.js";
+import Category from "../models/categoryModel.js";
+import Subcategory from "../models/subcategoryModel.js";
+import SubSubcategory from "../models/subSubcategoryModel.js";
 import {
   uploadToCloudinary,
   deleteFromCloudinary,
@@ -87,6 +90,8 @@ const createProduct = asyncHandler(async (req: MulterRequest, res) => {
     name,
     sku,
     category,
+    subcategory,
+    subSubcategory,
     brand,
     price,
     pricePerCase,
@@ -102,6 +107,79 @@ const createProduct = asyncHandler(async (req: MulterRequest, res) => {
   if (existingProduct) {
     res.status(400);
     throw new Error("Product with this SKU already exists");
+  }
+
+  // Validate category exists in our category system
+  let categoryName = category;
+  let categoryId = null;
+  let subcategoryId = null;
+  let subSubcategoryId = null;
+
+  // If subSubcategory is provided, validate the full hierarchy
+  if (subSubcategory) {
+    const subSubcategoryDoc = await SubSubcategory.findOne({ 
+      name: { $regex: new RegExp(`^${subSubcategory}$`, 'i') },
+      isActive: true 
+    });
+    
+    if (!subSubcategoryDoc) {
+      res.status(400);
+      throw new Error(`Sub-subcategory "${subSubcategory}" not found or inactive`);
+    }
+    
+    subSubcategoryId = subSubcategoryDoc._id;
+    categoryName = subSubcategoryDoc.name;
+    
+    // Get parent subcategory
+    const parentSubcategory = await Subcategory.findById(subSubcategoryDoc.parentSubcategory);
+    if (parentSubcategory) {
+      subcategoryId = parentSubcategory._id;
+      
+      // Get parent category
+      const parentCategory = await Category.findById(parentSubcategory.parentCategory);
+      if (parentCategory) {
+        categoryId = parentCategory._id;
+      }
+    }
+  }
+  // If subcategory is provided, validate the hierarchy
+  else if (subcategory) {
+    const subcategoryDoc = await Subcategory.findOne({ 
+      name: { $regex: new RegExp(`^${subcategory}$`, 'i') },
+      isActive: true 
+    });
+    
+    if (!subcategoryDoc) {
+      res.status(400);
+      throw new Error(`Subcategory "${subcategory}" not found or inactive`);
+    }
+    
+    subcategoryId = subcategoryDoc._id;
+    categoryName = subcategoryDoc.name;
+    
+    // Get parent category
+    const parentCategory = await Category.findById(subcategoryDoc.parentCategory);
+    if (parentCategory) {
+      categoryId = parentCategory._id;
+    }
+  }
+  // If only main category is provided, validate it
+  else if (category) {
+    const categoryDoc = await Category.findOne({ 
+      name: { $regex: new RegExp(`^${category}$`, 'i') },
+      isActive: true 
+    });
+    
+    if (!categoryDoc) {
+      res.status(400);
+      throw new Error(`Category "${category}" not found or inactive`);
+    }
+    
+    categoryId = categoryDoc._id;
+    categoryName = categoryDoc.name;
+  } else {
+    res.status(400);
+    throw new Error("Category is required");
   }
 
   let imageUrl = "";
@@ -135,7 +213,7 @@ const createProduct = asyncHandler(async (req: MulterRequest, res) => {
   const product = new Product({
     name,
     sku,
-    category,
+    category: categoryName, // Store the actual category name for backward compatibility
     brand,
     price: parseFloat(price),
     pricePerCase: parseFloat(pricePerCase),
@@ -146,9 +224,30 @@ const createProduct = asyncHandler(async (req: MulterRequest, res) => {
     imagePublicId,
     stockQuantity: parseInt(stockQuantity) || 0,
     inStock: parseInt(stockQuantity) > 0,
+    // Store category IDs for future reference
+    categoryId,
+    subcategoryId,
+    subSubcategoryId,
   });
 
   const createdProduct = await product.save();
+  
+  // Update category product counts
+  try {
+    if (categoryId) {
+      await Category.findByIdAndUpdate(categoryId, { $inc: { productCount: 1 } });
+    }
+    if (subcategoryId) {
+      await Subcategory.findByIdAndUpdate(subcategoryId, { $inc: { productCount: 1 } });
+    }
+    if (subSubcategoryId) {
+      await SubSubcategory.findByIdAndUpdate(subSubcategoryId, { $inc: { productCount: 1 } });
+    }
+  } catch (error) {
+    console.error("Error updating category product counts:", error);
+    // Don't fail the product creation if count update fails
+  }
+
   res.status(201).json(createdProduct);
 });
 
@@ -269,6 +368,70 @@ const getCategories = asyncHandler(async (req, res) => {
   res.json(categoriesWithCount);
 });
 
+// @desc    Get available categories for product creation
+// @route   GET /api/products/categories/available
+// @access  Public
+const getAvailableCategories = asyncHandler(async (req, res) => {
+  try {
+    // Get all active categories with their subcategories
+    const categories = await Category.find({ isActive: true })
+      .sort({ displayOrder: 1, name: 1 })
+      .lean();
+
+    const subcategories = await Subcategory.find({ isActive: true })
+      .sort({ displayOrder: 1, name: 1 })
+      .lean();
+
+    const subSubcategories = await SubSubcategory.find({ isActive: true })
+      .sort({ displayOrder: 1, name: 1 })
+      .lean();
+
+    // Group subcategories by parent category
+    const subcategoriesByParent = new Map();
+    subcategories.forEach((subcategory) => {
+      const parentId = subcategory.parentCategory.toString();
+      if (!subcategoriesByParent.has(parentId)) {
+        subcategoriesByParent.set(parentId, []);
+      }
+      subcategoriesByParent.get(parentId).push(subcategory);
+    });
+
+    // Group sub-subcategories by parent subcategory
+    const subSubcategoriesByParent = new Map();
+    subSubcategories.forEach((subSubcategory) => {
+      const parentId = subSubcategory.parentSubcategory.toString();
+      if (!subSubcategoriesByParent.has(parentId)) {
+        subSubcategoriesByParent.set(parentId, []);
+      }
+      subSubcategoriesByParent.get(parentId).push(subSubcategory);
+    });
+
+    // Build the complete hierarchy
+    const categoriesWithSubcategories = categories.map((category) => {
+      const categorySubcategories = subcategoriesByParent.get(category._id.toString()) || [];
+      
+      const subcategoriesWithSubSubcategories = categorySubcategories.map((subcategory: any) => {
+        const subSubcategories = subSubcategoriesByParent.get(subcategory._id.toString()) || [];
+        return {
+          ...subcategory,
+          subcategories: subSubcategories,
+        };
+      });
+
+      return {
+        ...category,
+        subcategories: subcategoriesWithSubSubcategories,
+      };
+    });
+
+    res.json(categoriesWithSubcategories);
+  } catch (error) {
+    console.error("Error fetching available categories:", error);
+    res.status(500);
+    throw new Error("Error fetching available categories");
+  }
+});
+
 export {
   getProducts,
   getProductById,
@@ -276,4 +439,5 @@ export {
   updateProduct,
   deleteProduct,
   getCategories,
+  getAvailableCategories,
 };

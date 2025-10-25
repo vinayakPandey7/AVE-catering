@@ -13,7 +13,10 @@ const reviewSchema = new mongoose.Schema(
 const productSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
-    category: { type: String, required: true },
+    category: { type: String, required: true }, // Store category name for backward compatibility
+    categoryId: { type: mongoose.Schema.Types.ObjectId, ref: "Category" }, // Reference to main category
+    subcategoryId: { type: mongoose.Schema.Types.ObjectId, ref: "Subcategory" }, // Reference to subcategory
+    subSubcategoryId: { type: mongoose.Schema.Types.ObjectId, ref: "SubSubcategory" }, // Reference to sub-subcategory
     price: { type: Number, required: true },
     pricePerCase: { type: Number, required: true },
     unit: { type: String, required: true },

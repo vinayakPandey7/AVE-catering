@@ -7,6 +7,7 @@ import {
   updateProduct,
   deleteProduct,
   getCategories,
+  getAvailableCategories,
 } from "../controllers/productController.js";
 import { uploadSingle } from "../middleware/uploadMiddleware.js";
 import { protect, admin } from '../middleware/authMiddleware.js'; // Uncomment when auth is needed
@@ -14,6 +15,7 @@ import { protect, admin } from '../middleware/authMiddleware.js'; // Uncomment w
 router.route("/").get(getProducts).post(uploadSingle, createProduct); // Add auth middleware when ready: protect, admin, uploadSingle, createProduct
 
 router.route("/categories").get(getCategories);
+router.route("/categories/available").get(getAvailableCategories);
 
 router
   .route("/:id")
