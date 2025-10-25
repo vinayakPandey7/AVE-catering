@@ -502,17 +502,105 @@ const ProductCreationForm = () => {
 
 **DELETE** `/products/:id`
 
-- **Description**: Delete a product (Admin only)
-- **Access**: Private/Admin (only admin@test.com)
+- **Description**: Delete a product and update category counts (Admin only)
+- **Access**: Private/Admin (requires JWT token)
+- **Headers**: `Authorization: Bearer <jwt_token>`
 - **Response**:
 
 ```json
 {
-  "message": "Product deleted successfully"
+  "message": "Product deleted successfully",
+  "deletedProduct": {
+    "id": "product_id",
+    "name": "Product Name",
+    "sku": "SKU123"
+  }
 }
 ```
 
-- **Error Codes**: 404 (Product not found), 401 (Unauthorized), 403 (Admin required)
+- **Features**:
+  - Deletes product from database
+  - Removes associated image from Cloudinary
+  - Updates category product counts (decrements by 1)
+  - Updates subcategory and sub-subcategory counts if applicable
+  - Returns details of deleted product for confirmation
+
+- **Error Codes**: 
+  - 404 (Product not found)
+  - 401 (Unauthorized - no token or invalid token)
+  - 403 (Admin required - user is not admin)
+
+#### Frontend Integration Example
+
+```javascript
+// Delete product with authentication
+const deleteProduct = async (productId, token) => {
+  try {
+    const response = await fetch(`/api/products/${productId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to delete product');
+    }
+    
+    const result = await response.json();
+    console.log('Product deleted:', result.deletedProduct);
+    return result;
+  } catch (error) {
+    console.error('Error deleting product:', error);
+    throw error;
+  }
+};
+
+// React component example
+const ProductList = () => {
+  const [products, setProducts] = useState([]);
+  const [userToken, setUserToken] = useState(localStorage.getItem('token'));
+  
+  const handleDeleteProduct = async (productId) => {
+    if (!window.confirm('Are you sure you want to delete this product?')) {
+      return;
+    }
+    
+    try {
+      await deleteProduct(productId, userToken);
+      
+      // Remove product from local state
+      setProducts(products.filter(product => product._id !== productId));
+      
+      // Show success message
+      alert('Product deleted successfully!');
+    } catch (error) {
+      alert(`Error: ${error.message}`);
+    }
+  };
+  
+  return (
+    <div>
+      {products.map(product => (
+        <div key={product._id} className="product-item">
+          <h3>{product.name}</h3>
+          <p>SKU: {product.sku}</p>
+          <p>Price: ${product.price}</p>
+          <button 
+            onClick={() => handleDeleteProduct(product._id)}
+            className="delete-btn"
+            style={{ backgroundColor: '#dc3545', color: 'white' }}
+          >
+            Delete Product
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+};
+```
 
 ---
 
@@ -1055,6 +1143,9 @@ curl http://localhost:5000/api/categories/beverages
 
 # Test admin category endpoints (replace TOKEN with actual JWT)
 curl -H "Authorization: Bearer TOKEN" http://localhost:5000/api/categories/admin
+
+# Test product deletion (replace TOKEN and PRODUCT_ID with actual values)
+curl -X DELETE -H "Authorization: Bearer TOKEN" http://localhost:5000/api/products/PRODUCT_ID
 
 # Test products with category filter
 curl "http://localhost:5000/api/products?category=beverages"
