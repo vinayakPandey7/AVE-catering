@@ -332,25 +332,61 @@ const updateProduct = asyncHandler(async (req: MulterRequest, res) => {
 // @route   DELETE /api/products/:id
 // @access  Private/Admin
 const deleteProduct = asyncHandler(async (req, res) => {
-  const product = await Product.findById(req.params.id);
+  try {
+    const product = await Product.findById(req.params.id);
 
-  if (!product) {
-    res.status(404);
-    throw new Error("Product not found");
-  }
-
-  // Delete image from Cloudinary
-  if (product.imagePublicId) {
-    try {
-      await deleteFromCloudinary(product.imagePublicId);
-    } catch (error) {
-      console.error("Error deleting image from Cloudinary:", error);
-      // Continue with product deletion even if image deletion fails
+    if (!product) {
+      res.status(404);
+      throw new Error("Product not found");
     }
-  }
 
-  await Product.findByIdAndDelete(req.params.id);
-  res.json({ message: "Product deleted successfully" });
+    // Store category IDs before deletion for count updates
+    const categoryId = product.categoryId;
+    const subcategoryId = product.subcategoryId;
+    const subSubcategoryId = product.subSubcategoryId;
+
+    // Delete image from Cloudinary
+    if (product.imagePublicId) {
+      try {
+        await deleteFromCloudinary(product.imagePublicId);
+      } catch (error) {
+        console.error("Error deleting image from Cloudinary:", error);
+        // Continue with product deletion even if image deletion fails
+      }
+    }
+
+    // Delete the product
+    await Product.findByIdAndDelete(req.params.id);
+
+    // Update category product counts
+    try {
+      if (categoryId) {
+        await Category.findByIdAndUpdate(categoryId, { $inc: { productCount: -1 } });
+      }
+      if (subcategoryId) {
+        await Subcategory.findByIdAndUpdate(subcategoryId, { $inc: { productCount: -1 } });
+      }
+      if (subSubcategoryId) {
+        await SubSubcategory.findByIdAndUpdate(subSubcategoryId, { $inc: { productCount: -1 } });
+      }
+    } catch (error) {
+      console.error("Error updating category product counts:", error);
+      // Don't fail the deletion if count update fails
+    }
+
+    console.log(`✅ Product "${product.name}" deleted successfully`);
+    res.json({ 
+      message: "Product deleted successfully",
+      deletedProduct: {
+        id: product._id,
+        name: product.name,
+        sku: product.sku
+      }
+    });
+  } catch (error) {
+    console.error("Error in deleteProduct:", error);
+    throw error;
+  }
 });
 
 // @desc    Get all unique product categories (for backward compatibility)

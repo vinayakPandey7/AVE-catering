@@ -12,7 +12,7 @@ import {
 import { uploadSingle } from "../middleware/uploadMiddleware.js";
 import { protect, admin } from '../middleware/authMiddleware.js'; // Uncomment when auth is needed
 
-router.route("/").get(getProducts).post(uploadSingle, createProduct); // Add auth middleware when ready: protect, admin, uploadSingle, createProduct
+router.route("/").get(getProducts).post(uploadSingle, protect, admin, createProduct); // Admin only - create product
 
 router.route("/categories").get(getCategories);
 router.route("/categories/available").get(getAvailableCategories);
@@ -20,7 +20,7 @@ router.route("/categories/available").get(getAvailableCategories);
 router
   .route("/:id")
   .get(getProductById)
-  .put(uploadSingle,protect, updateProduct) // Add auth middleware when ready: protect, admin, uploadSingle, updateProduct
-  .delete(deleteProduct); // Add auth middleware when ready: protect, admin, deleteProduct
+  .put(uploadSingle, protect, admin, updateProduct) // Admin only - update product
+  .delete(protect, admin, deleteProduct); // Admin only - delete product
 
 export default router;
