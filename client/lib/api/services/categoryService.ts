@@ -12,6 +12,8 @@ export interface Category {
   displayOrder: number;
   isActive: boolean;
   productCount?: number;
+  level?: number;
+  path?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -33,6 +35,12 @@ export const getCategories = async (): Promise<Category[]> => {
   return response.data;
 };
 
+// Get all categories for admin (includes inactive)
+export const getCategoriesForAdmin = async (): Promise<Category[]> => {
+  const response = await api.get('/categories/admin');
+  return response.data;
+};
+
 // Get category tree structure
 export const getCategoryTree = async (): Promise<Category[]> => {
   const response = await api.get('/categories/tree');
@@ -46,7 +54,7 @@ export const getCategoryBySlug = async (slug: string): Promise<Category> => {
 };
 
 // Create new category (Admin)
-export const createCategory = async (categoryData: CreateCategoryRequest, imageFile?: File): Promise<Category> => {
+export const createCategory = async (categoryData: CreateCategoryRequest, imageUrl?: string): Promise<Category> => {
   const formData = new FormData();
   
   // Append all category data
@@ -56,9 +64,9 @@ export const createCategory = async (categoryData: CreateCategoryRequest, imageF
     }
   });
   
-  // Append image file if provided
-  if (imageFile) {
-    formData.append('image', imageFile);
+  // Append image URL if provided
+  if (imageUrl) {
+    formData.append('imageUrl', imageUrl);
   }
 
   const response = await api.post('/categories/admin/create', formData, {
@@ -70,7 +78,7 @@ export const createCategory = async (categoryData: CreateCategoryRequest, imageF
 };
 
 // Update category (Admin)
-export const updateCategory = async (id: string, categoryData: UpdateCategoryRequest, imageFile?: File): Promise<Category> => {
+export const updateCategory = async (id: string, categoryData: UpdateCategoryRequest, imageUrl?: string): Promise<Category> => {
   const formData = new FormData();
   
   // Append all category data
@@ -80,9 +88,9 @@ export const updateCategory = async (id: string, categoryData: UpdateCategoryReq
     }
   });
   
-  // Append image file if provided
-  if (imageFile) {
-    formData.append('image', imageFile);
+  // Append image URL if provided
+  if (imageUrl) {
+    formData.append('imageUrl', imageUrl);
   }
 
   const response = await api.put(`/categories/admin/${id}`, formData, {
@@ -96,5 +104,19 @@ export const updateCategory = async (id: string, categoryData: UpdateCategoryReq
 // Delete category (Admin)
 export const deleteCategory = async (id: string): Promise<{ message: string }> => {
   const response = await api.delete(`/categories/admin/${id}`);
+  return response.data;
+};
+
+// Upload image to Cloudinary
+export const uploadImage = async (file: File): Promise<{ secure_url: string; public_id: string }> => {
+  const formData = new FormData();
+  formData.append('image', file);
+  
+  const response = await api.post('/upload', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  
   return response.data;
 };

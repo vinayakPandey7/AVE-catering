@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const categorySchema = new mongoose.Schema(
+const subcategorySchema = new mongoose.Schema(
   {
     name: { 
       type: String, 
@@ -22,7 +22,7 @@ const categorySchema = new mongoose.Schema(
     parentCategory: { 
       type: mongoose.Schema.Types.ObjectId, 
       ref: "Category", 
-      default: null 
+      required: true 
     },
     isActive: { 
       type: Boolean, 
@@ -38,7 +38,7 @@ const categorySchema = new mongoose.Schema(
     },
     level: {
       type: Number,
-      default: 0
+      default: 1
     },
     path: {
       type: String,
@@ -51,14 +51,14 @@ const categorySchema = new mongoose.Schema(
 );
 
 // Index for better query performance
-categorySchema.index({ slug: 1 });
-categorySchema.index({ parentCategory: 1 });
-categorySchema.index({ isActive: 1, displayOrder: 1 });
-categorySchema.index({ level: 1 });
-categorySchema.index({ path: 1 });
+subcategorySchema.index({ slug: 1 });
+subcategorySchema.index({ parentCategory: 1 });
+subcategorySchema.index({ isActive: 1, displayOrder: 1 });
+subcategorySchema.index({ level: 1 });
+subcategorySchema.index({ path: 1 });
 
 // Pre-save middleware to generate slug and calculate level/path
-categorySchema.pre('save', async function(next) {
+subcategorySchema.pre('save', async function(next) {
   if (this.isModified('name') || this.isNew) {
     this.slug = this.name
       .toLowerCase()
@@ -69,13 +69,13 @@ categorySchema.pre('save', async function(next) {
 
   // Calculate level and path based on parent category
   if (this.parentCategory) {
-    const parent = await Category.findById(this.parentCategory);
+    const parent = await mongoose.model('Category').findById(this.parentCategory);
     if (parent) {
       this.level = parent.level + 1;
       this.path = parent.path ? `${parent.path}/${parent.slug}` : parent.slug;
     }
   } else {
-    this.level = 0;
+    this.level = 1;
     this.path = '';
   }
 
@@ -83,7 +83,7 @@ categorySchema.pre('save', async function(next) {
 });
 
 // Ensure slug is always generated
-categorySchema.pre('validate', function(next) {
+subcategorySchema.pre('validate', function(next) {
   if (!this.slug && this.name) {
     this.slug = this.name
       .toLowerCase()
@@ -94,17 +94,6 @@ categorySchema.pre('validate', function(next) {
   next();
 });
 
-// Virtual for subcategories
-categorySchema.virtual('subcategories', {
-  ref: 'Subcategory',
-  localField: '_id',
-  foreignField: 'parentCategory'
-});
+const Subcategory = mongoose.model("Subcategory", subcategorySchema);
 
-// Ensure virtual fields are serialized
-categorySchema.set('toJSON', { virtuals: true });
-categorySchema.set('toObject', { virtuals: true });
-
-const Category = mongoose.model("Category", categorySchema);
-
-export default Category;
+export default Subcategory;

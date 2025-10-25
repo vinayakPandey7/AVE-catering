@@ -1,11 +1,11 @@
 import asyncHandler from "express-async-handler";
 import mongoose from "mongoose";
 import { Request } from "express";
-import Product from "../models/productModel.ts";
+import Product from "../models/productModel.js";
 import {
   uploadToCloudinary,
   deleteFromCloudinary,
-} from "../config/cloudinary.ts";
+} from "../config/cloudinary.js";
 
 interface MulterRequest extends Request {
   file?: Express.Multer.File;

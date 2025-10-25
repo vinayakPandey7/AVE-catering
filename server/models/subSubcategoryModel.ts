@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const categorySchema = new mongoose.Schema(
+const subSubcategorySchema = new mongoose.Schema(
   {
     name: { 
       type: String, 
@@ -19,10 +19,10 @@ const categorySchema = new mongoose.Schema(
     imagePublicId: { 
       type: String 
     },
-    parentCategory: { 
+    parentSubcategory: { 
       type: mongoose.Schema.Types.ObjectId, 
-      ref: "Category", 
-      default: null 
+      ref: "Subcategory", 
+      required: true 
     },
     isActive: { 
       type: Boolean, 
@@ -38,7 +38,7 @@ const categorySchema = new mongoose.Schema(
     },
     level: {
       type: Number,
-      default: 0
+      default: 2
     },
     path: {
       type: String,
@@ -51,14 +51,14 @@ const categorySchema = new mongoose.Schema(
 );
 
 // Index for better query performance
-categorySchema.index({ slug: 1 });
-categorySchema.index({ parentCategory: 1 });
-categorySchema.index({ isActive: 1, displayOrder: 1 });
-categorySchema.index({ level: 1 });
-categorySchema.index({ path: 1 });
+subSubcategorySchema.index({ slug: 1 });
+subSubcategorySchema.index({ parentSubcategory: 1 });
+subSubcategorySchema.index({ isActive: 1, displayOrder: 1 });
+subSubcategorySchema.index({ level: 1 });
+subSubcategorySchema.index({ path: 1 });
 
 // Pre-save middleware to generate slug and calculate level/path
-categorySchema.pre('save', async function(next) {
+subSubcategorySchema.pre('save', async function(next) {
   if (this.isModified('name') || this.isNew) {
     this.slug = this.name
       .toLowerCase()
@@ -67,15 +67,16 @@ categorySchema.pre('save', async function(next) {
       .trim();
   }
 
-  // Calculate level and path based on parent category
-  if (this.parentCategory) {
-    const parent = await Category.findById(this.parentCategory);
+  // Calculate level and path based on parent subcategory
+  if (this.parentSubcategory) {
+    const parent = await mongoose.model('Subcategory').findById(this.parentSubcategory);
     if (parent) {
       this.level = parent.level + 1;
       this.path = parent.path ? `${parent.path}/${parent.slug}` : parent.slug;
     }
   } else {
-    this.level = 0;
+    // Sub-subcategories must have a parent subcategory
+    this.level = 2; 
     this.path = '';
   }
 
@@ -83,7 +84,7 @@ categorySchema.pre('save', async function(next) {
 });
 
 // Ensure slug is always generated
-categorySchema.pre('validate', function(next) {
+subSubcategorySchema.pre('validate', function(next) {
   if (!this.slug && this.name) {
     this.slug = this.name
       .toLowerCase()
@@ -94,17 +95,6 @@ categorySchema.pre('validate', function(next) {
   next();
 });
 
-// Virtual for subcategories
-categorySchema.virtual('subcategories', {
-  ref: 'Subcategory',
-  localField: '_id',
-  foreignField: 'parentCategory'
-});
+const SubSubcategory = mongoose.model("SubSubcategory", subSubcategorySchema);
 
-// Ensure virtual fields are serialized
-categorySchema.set('toJSON', { virtuals: true });
-categorySchema.set('toObject', { virtuals: true });
-
-const Category = mongoose.model("Category", categorySchema);
-
-export default Category;
+export default SubSubcategory;
