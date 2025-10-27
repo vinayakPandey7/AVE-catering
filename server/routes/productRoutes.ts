@@ -8,6 +8,7 @@ import {
   deleteProduct,
   getCategories,
   getAvailableCategories,
+  getTopSellingProducts,
 } from "../controllers/productController.js";
 import { uploadSingle } from "../middleware/uploadMiddleware.js";
 import { protect, admin } from '../middleware/authMiddleware.js'; // Uncomment when auth is needed
@@ -16,6 +17,7 @@ router.route("/").get(getProducts).post(uploadSingle, protect, admin, createProd
 
 router.route("/categories").get(getCategories);
 router.route("/categories/available").get(getAvailableCategories);
+router.route("/top-selling").get(getTopSellingProducts);
 
 router
   .route("/:id")

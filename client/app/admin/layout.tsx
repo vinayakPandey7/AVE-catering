@@ -16,7 +16,8 @@ import {
   LogOut,
   Bell,
   Search,
-  FolderTree
+  FolderTree,
+  Upload
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,6 +31,7 @@ const navigation = [
   { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
   { name: 'Customers', href: '/admin/customers', icon: Users },
   { name: 'Offers & Coupons', href: '/admin/offers', icon: Tag },
+  { name: 'Data Import', href: '/admin/import', icon: Upload },
   // { name: 'Reports', href: '/admin/reports', icon: BarChart3 },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];

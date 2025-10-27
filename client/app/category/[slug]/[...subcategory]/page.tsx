@@ -1,20 +1,30 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useParams } from 'next/navigation';
+import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
+import { fetchProductsAsync } from '@/lib/store/slices/productsSlice';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ProductGrid from '@/components/shared/ProductGrid';
-import { mockProducts } from '@/lib/data/mockProducts';
-import { Package, Filter, ArrowLeft } from 'lucide-react';
+import { Package, Filter, ArrowLeft, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
 export default function SubcategoryPage(): React.JSX.Element {
+  const dispatch = useAppDispatch();
   const params = useParams();
   const slug = params.slug as string;
   const subcategory = params.subcategory as string[];
+  
+  // Redux state
+  const { items: products, isLoading: productsLoading } = useAppSelector((state) => state.products);
+  
+  // Load products on component mount
+  useEffect(() => {
+    dispatch(fetchProductsAsync({ category: slug, limit: 100 }));
+  }, [dispatch, slug]);
   
   // Build breadcrumb path
   const fullPath = [slug, ...subcategory].join(' > ');
@@ -31,7 +41,7 @@ export default function SubcategoryPage(): React.JSX.Element {
   const filteredProducts = useMemo(() => {
     const searchTerms = [slug, ...subcategory].map(term => term.toLowerCase());
     
-    return mockProducts.filter(product => {
+    return products.filter(product => {
       const productName = product.name.toLowerCase();
       const productCategory = product.category.toLowerCase();
       const productBrand = product.brand?.toLowerCase() || '';
@@ -45,7 +55,7 @@ export default function SubcategoryPage(): React.JSX.Element {
         productCategory.includes(parentCategory.toLowerCase())
       );
     });
-  }, [slug, subcategory, parentCategory]);
+  }, [slug, subcategory, parentCategory, products]);
 
   // Generate breadcrumb
   const breadcrumbs = [
@@ -56,6 +66,26 @@ export default function SubcategoryPage(): React.JSX.Element {
       href: `/category/${slug}/${subcategory.slice(0, idx + 1).join('/')}`,
     })),
   ];
+
+  // Loading state
+  if (productsLoading) {
+    return (
+      <>
+        <Header />
+        <main className="min-h-screen bg-gray-50 py-8">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-center py-20">
+              <div className="text-center">
+                <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+                <p className="text-muted-foreground">Loading products...</p>
+              </div>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>

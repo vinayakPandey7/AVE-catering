@@ -1,39 +1,58 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { mockProducts } from '@/lib/data/mockProducts';
-import { ShoppingCart, Minus, Plus, Package, Truck, Shield } from 'lucide-react';
+import { ShoppingCart, Minus, Plus, Package, Truck, Shield, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useAppDispatch } from '@/lib/store/hooks';
 import { addToCart } from '@/lib/store/slices/cartSlice';
 import { toast, Toaster } from 'sonner';
+import { getProductById, Product } from '@/lib/api/services/productService';
 
 export default function ProductDetailPage(): React.JSX.Element {
   const params = useParams();
   const dispatch = useAppDispatch();
   const [quantity, setQuantity] = useState<number>(1);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const product = mockProducts.find(p => p.id === params.id as string);
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+        const productData = await getProductById(params.id as string);
+        setProduct(productData);
+      } catch (error) {
+        console.error('Error fetching product:', error);
+        setProduct(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (params.id) {
+      fetchProduct();
+    }
+  }, [params.id]);
 
   const handleAddToCart = (): void => {
     if (!product) return;
     
     dispatch(addToCart({
-      id: product.id,
+      id: product._id,
       name: product.name,
       price: product.price,
-      pricePerCase: product.pricePerCase,
+      pricePerCase: product.pricePerCase || product.price,
       quantity: quantity,
       image: product.image,
-      unit: product.unit,
-      packSize: product.packSize,
+      unit: product.unit || 'unit',
+      packSize: product.packSize || '1 unit',
     }));
     toast.success(`Added ${quantity} item(s) to cart`);
   };
@@ -41,6 +60,21 @@ export default function ProductDetailPage(): React.JSX.Element {
   const handleQuantityChange = (newQuantity: number): void => {
     setQuantity(Math.max(1, newQuantity));
   };
+
+  if (loading) {
+    return (
+      <>
+        <Header />
+        <div className="container mx-auto px-4 py-20 text-center">
+          <div className="flex items-center justify-center gap-2">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <span>Loading product...</span>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
 
   if (!product) {
     return (
@@ -69,8 +103,8 @@ export default function ProductDetailPage(): React.JSX.Element {
             {' / '}
             <Link href="/products" className="hover:text-primary">Products</Link>
             {' / '}
-            <Link href={`/category/${product.category.toLowerCase()}`} className="hover:text-primary">
-              {product.category}
+            <Link href={`/category/${product.category?.toLowerCase() || 'all'}`} className="hover:text-primary">
+              {product.category || 'All Products'}
             </Link>
             {' / '}
             <span className="text-foreground">{product.name}</span>
@@ -104,9 +138,9 @@ export default function ProductDetailPage(): React.JSX.Element {
                   {product.brand && (
                     <Badge variant="outline">{product.brand}</Badge>
                   )}
-                  {product.inStock ? (
+                  {product.stockQuantity > 0 ? (
                     <Badge variant="outline" className="text-green-600 border-green-600">
-                      In Stock
+                      In Stock ({product.stockQuantity})
                     </Badge>
                   ) : (
                     <Badge variant="outline" className="text-red-600 border-red-600">
@@ -116,7 +150,7 @@ export default function ProductDetailPage(): React.JSX.Element {
                 </div>
                 
                 <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
-                <p className="text-muted-foreground">{product.packSize}</p>
+                <p className="text-muted-foreground">{product.packSize || 'Standard packaging'}</p>
                 {product.sku && (
                   <p className="text-sm text-muted-foreground mt-1">SKU: {product.sku}</p>
                 )}
@@ -129,11 +163,13 @@ export default function ProductDetailPage(): React.JSX.Element {
                     <span className="text-4xl font-bold text-primary">
                       ${product.price.toFixed(2)}
                     </span>
-                    <span className="text-lg text-muted-foreground">/ {product.unit}</span>
+                    <span className="text-lg text-muted-foreground">/ {product.unit || 'unit'}</span>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Case Price: ${product.pricePerCase.toFixed(2)}
-                  </p>
+                  {product.pricePerCase && (
+                    <p className="text-sm text-muted-foreground">
+                      Case Price: ${product.pricePerCase.toFixed(2)}
+                    </p>
+                  )}
                 </CardContent>
               </Card>
 
@@ -171,7 +207,7 @@ export default function ProductDetailPage(): React.JSX.Element {
                   size="lg"
                   className="w-full bg-primary hover:bg-primary/90"
                   onClick={handleAddToCart}
-                  disabled={!product.inStock}
+                  disabled={product.stockQuantity === 0}
                 >
                   <ShoppingCart className="mr-2 h-5 w-5" />
                   Add to Cart
@@ -182,7 +218,7 @@ export default function ProductDetailPage(): React.JSX.Element {
                     size="lg"
                     variant="outline"
                     className="w-full"
-                    disabled={!product.inStock}
+                    disabled={product.stockQuantity === 0}
                   >
                     Buy Now
                   </Button>

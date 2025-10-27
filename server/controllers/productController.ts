@@ -5,6 +5,7 @@ import Product from "../models/productModel.js";
 import Category from "../models/categoryModel.js";
 import Subcategory from "../models/subcategoryModel.js";
 import SubSubcategory from "../models/subSubcategoryModel.js";
+import Order from "../models/orderModel.js";
 import {
   uploadToCloudinary,
   deleteFromCloudinary,
@@ -468,6 +469,66 @@ const getAvailableCategories = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc    Get top selling products
+// @route   GET /api/products/top-selling
+// @access  Public
+const getTopSellingProducts = asyncHandler(async (req, res) => {
+  const { limit = 20 } = req.query;
+
+  // Get top selling products from order data
+  const topSellingProducts = await Order.aggregate([
+    { $unwind: '$orderItems' },
+    {
+      $group: {
+        _id: '$orderItems.product',
+        productName: { $first: '$orderItems.name' },
+        productImage: { $first: '$orderItems.image' },
+        productPrice: { $first: '$orderItems.price' },
+        productPackSize: { $first: '$orderItems.packSize' },
+        productUnit: { $first: '$orderItems.unit' },
+        totalSold: { $sum: '$orderItems.quantity' },
+        totalRevenue: { $sum: { $multiply: ['$orderItems.price', '$orderItems.quantity'] } },
+        orderCount: { $sum: 1 }
+      }
+    },
+    { $sort: { totalSold: -1 } },
+    { $limit: parseInt(limit as string) }
+  ]);
+
+  // Get full product details for top selling products
+  const productIds = topSellingProducts.map(item => item._id);
+  const products = await Product.find({ _id: { $in: productIds } });
+
+  // Merge order data with product details
+  const topSellingWithDetails = topSellingProducts.map(orderData => {
+    const product = products.find(p => p._id.toString() === orderData._id.toString());
+    return {
+      _id: orderData._id,
+      name: orderData.productName,
+      image: orderData.productImage,
+      price: orderData.productPrice,
+      packSize: orderData.productPackSize,
+      unit: orderData.productUnit,
+      category: product?.category || 'Unknown',
+      brand: product?.brand || 'Unknown',
+      description: product?.description || '',
+      inStock: product?.inStock || true,
+      isFeatured: product?.isFeatured || false,
+      isOnOffer: product?.isOnOffer || false,
+      stockQuantity: product?.stockQuantity || 0,
+      // Sales data
+      totalSold: orderData.totalSold,
+      totalRevenue: orderData.totalRevenue,
+      orderCount: orderData.orderCount
+    };
+  });
+
+  res.json({
+    products: topSellingWithDetails,
+    total: topSellingWithDetails.length
+  });
+});
+
 export {
   getProducts,
   getProductById,
@@ -476,4 +537,5 @@ export {
   deleteProduct,
   getCategories,
   getAvailableCategories,
+  getTopSellingProducts,
 };

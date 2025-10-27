@@ -26,89 +26,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { getProducts, deleteProduct, Product } from '@/lib/api/services/productService';
-
-// Mock products data
-const mockProducts = [
-  {
-    id: 1,
-    name: 'Coca-Cola 24pk Cans',
-    sku: 'BEV-001',
-    category: 'Beverages',
-    brand: 'Coca-Cola',
-    price: 12.99,
-    pricePerCase: 155.88,
-    stock: 250,
-    minStock: 50,
-    status: 'active',
-    image: '/images/products/coke.jpg',
-  },
-  {
-    id: 2,
-    name: 'Lay\'s Potato Chips Box (40 bags)',
-    sku: 'SNK-002',
-    category: 'Snacks',
-    brand: 'Lay\'s',
-    price: 15.99,
-    pricePerCase: 191.88,
-    stock: 45,
-    minStock: 30,
-    status: 'active',
-    image: '/images/products/lays.jpg',
-  },
-  {
-    id: 3,
-    name: 'Tide Laundry Detergent 150oz',
-    sku: 'CLN-003',
-    category: 'Cleaning',
-    brand: 'Tide',
-    price: 18.99,
-    pricePerCase: 227.88,
-    stock: 12,
-    minStock: 20,
-    status: 'low_stock',
-    image: '/images/products/tide.jpg',
-  },
-  {
-    id: 4,
-    name: 'Rice 50lb Bag',
-    sku: 'GRC-004',
-    category: 'Grocery',
-    brand: 'Generic',
-    price: 45.99,
-    pricePerCase: 551.88,
-    stock: 5,
-    minStock: 15,
-    status: 'low_stock',
-    image: '/images/products/rice.jpg',
-  },
-  {
-    id: 5,
-    name: 'Water Bottles 24pk',
-    sku: 'BEV-005',
-    category: 'Beverages',
-    brand: 'Aquafina',
-    price: 5.99,
-    pricePerCase: 71.88,
-    stock: 0,
-    minStock: 100,
-    status: 'out_of_stock',
-    image: '/images/products/water.jpg',
-  },
-  {
-    id: 6,
-    name: 'Paper Towels 12pk',
-    sku: 'HH-006',
-    category: 'Household',
-    brand: 'Bounty',
-    price: 22.99,
-    pricePerCase: 275.88,
-    stock: 180,
-    minStock: 50,
-    status: 'active',
-    image: '/images/products/paper-towels.jpg',
-  },
-];
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { getProducts, deleteProduct, updateProduct, Product } from '@/lib/api/services/productService';
+import { toast } from 'sonner';
+import { Toaster } from 'sonner';
 
 const getStatusBadge = (status: string, stock: number) => {
   if (stock === 0) {
@@ -140,6 +67,12 @@ export default function ProductsPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalProducts, setTotalProducts] = useState(0);
+  
+  // Stock update modal state
+  const [isStockModalOpen, setIsStockModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [newStockQuantity, setNewStockQuantity] = useState('');
+  const [updatingStock, setUpdatingStock] = useState(false);
 
   useEffect(() => {
     fetchProducts();
@@ -160,8 +93,7 @@ export default function ProductsPage() {
       setTotalProducts(response.pagination.total);
     } catch (error) {
       console.error('Error fetching products:', error);
-      // Fallback to mock data for development
-      setProducts(mockProducts);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -180,21 +112,47 @@ export default function ProductsPage() {
     }
   };
 
-  const handleUpdateStock = async (productId: string, currentStock: number) => {
-    const newStock = prompt(
-      `Update stock for this product\nCurrent stock: ${currentStock}`,
-      currentStock.toString()
-    );
-    if (newStock !== null && newStock !== '') {
-      try {
-        // This would need an update stock API endpoint
-        alert(`Stock updated to ${newStock} units`);
-        await fetchProducts();
-      } catch (error) {
-        console.error('Error updating stock:', error);
-        alert('Error updating stock. Please try again.');
+  const handleUpdateStock = (product: Product) => {
+    setSelectedProduct(product);
+    setNewStockQuantity(product.stockQuantity?.toString() || '0');
+    setIsStockModalOpen(true);
+  };
+
+  const handleStockUpdate = async () => {
+    if (!selectedProduct || !newStockQuantity) return;
+
+    try {
+      setUpdatingStock(true);
+      
+      const stockValue = parseInt(newStockQuantity);
+      if (isNaN(stockValue) || stockValue < 0) {
+        toast.error('Please enter a valid stock quantity');
+        return;
       }
+
+      await updateProduct(selectedProduct._id, {
+        stockQuantity: stockValue,
+      });
+
+      toast.success(`Stock updated to ${stockValue} units`);
+      setIsStockModalOpen(false);
+      setSelectedProduct(null);
+      setNewStockQuantity('');
+      
+      // Refresh products list
+      await fetchProducts();
+    } catch (error: any) {
+      console.error('Error updating stock:', error);
+      toast.error(error.response?.data?.message || 'Failed to update stock');
+    } finally {
+      setUpdatingStock(false);
     }
+  };
+
+  const closeStockModal = () => {
+    setIsStockModalOpen(false);
+    setSelectedProduct(null);
+    setNewStockQuantity('');
   };
 
   const categories = ['all', ...Array.from(new Set(products.map((p) => p.category)))];
@@ -444,7 +402,7 @@ export default function ProductsPage() {
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              onClick={() => handleUpdateStock(product._id, product.stockQuantity)}
+                              onClick={() => handleUpdateStock(product)}
                             >
                               <Package className="h-4 w-4 mr-2" />
                               Update Stock
@@ -467,6 +425,84 @@ export default function ProductsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Stock Update Modal */}
+      <Dialog open={isStockModalOpen} onOpenChange={setIsStockModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Update Stock Quantity</DialogTitle>
+          </DialogHeader>
+          {selectedProduct && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
+                  {selectedProduct.image ? (
+                    <Image
+                      src={selectedProduct.image}
+                      alt={selectedProduct.name}
+                      width={48}
+                      height={48}
+                      className="rounded-lg object-cover"
+                    />
+                  ) : (
+                    <Package className="h-6 w-6 text-gray-400" />
+                  )}
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-medium">{selectedProduct.name}</h3>
+                  <p className="text-sm text-gray-500">SKU: {selectedProduct.sku}</p>
+                  <p className="text-sm text-gray-500">
+                    Current Stock: {selectedProduct.stockQuantity || 0} units
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  New Stock Quantity
+                </label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={newStockQuantity}
+                  onChange={(e) => setNewStockQuantity(e.target.value)}
+                  placeholder="Enter stock quantity"
+                  className="text-lg"
+                />
+                <p className="text-xs text-gray-500">
+                  Enter the new stock quantity for this product
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={closeStockModal}
+                  disabled={updatingStock}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleStockUpdate}
+                  disabled={updatingStock}
+                  className="bg-[#006e9d] hover:bg-[#005580]"
+                >
+                  {updatingStock ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Updating...
+                    </>
+                  ) : (
+                    'Update Stock'
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Toaster position="top-right" richColors />
     </div>
   );
 }

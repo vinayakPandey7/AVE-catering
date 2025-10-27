@@ -133,3 +133,9 @@ export const getProductCategories = async (): Promise<Array<{ name: string; coun
   const response = await api.get('/products/categories');
   return response.data;
 };
+
+// Get top selling products
+export const getTopSellingProducts = async (limit: number = 20): Promise<{ products: Product[]; total: number }> => {
+  const response = await api.get(`/products/top-selling?limit=${limit}`);
+  return response.data;
+};

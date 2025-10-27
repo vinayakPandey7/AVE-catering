@@ -6,46 +6,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Save, X, Trash2, Upload, ImageIcon } from 'lucide-react';
+import { ArrowLeft, Save, X, Trash2, Upload, ImageIcon, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-
-// Mock product data - replace with API call
-const mockProducts: Record<string, any> = {
-  '1': {
-    id: 1,
-    name: 'Coca-Cola 24pk Cans',
-    sku: 'BEV-001',
-    category: 'Beverages',
-    brand: 'Coca-Cola',
-    price: 12.99,
-    pricePerCase: 155.88,
-    stock: 250,
-    minStock: 50,
-    packSize: '24 cans x 12oz',
-    unit: 'unit',
-    description: 'Classic Coca-Cola 24 pack cans',
-  },
-  '2': {
-    id: 2,
-    name: 'Lay\'s Potato Chips Box (40 bags)',
-    sku: 'SNK-002',
-    category: 'Snacks',
-    brand: 'Lay\'s',
-    price: 15.99,
-    pricePerCase: 191.88,
-    stock: 45,
-    minStock: 30,
-    packSize: '40 bags x 1oz',
-    unit: 'box',
-    description: 'Assorted Lay\'s potato chips',
-  },
-};
+import { getProductById, updateProduct, deleteProduct, Product } from '@/lib/api/services/productService';
+import { toast } from 'sonner';
+import { Toaster } from 'sonner';
 
 export default function EditProductPage() {
   const router = useRouter();
   const params = useParams();
   const productId = params.id as string;
 
+  const [product, setProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     sku: '',
@@ -53,7 +25,7 @@ export default function EditProductPage() {
     brand: '',
     price: '',
     pricePerCase: '',
-    stock: '',
+    stockQuantity: '',
     minStock: '',
     packSize: '',
     unit: 'unit',
@@ -62,41 +34,61 @@ export default function EditProductPage() {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
 
   const categories = [
     'Beverages',
     'Snacks',
-    'Cleaning',
+    'Cleaning & Laundry',
     'Grocery',
     'Health & Beauty',
     'Tobacco',
-    'Household',
+    'Household & Kitchen',
     'Mexican Items',
     'Ice Cream & Frozen',
   ];
 
   useEffect(() => {
-    // Load product data
-    const product = mockProducts[productId];
-    if (product) {
-      setFormData({
-        name: product.name,
-        sku: product.sku,
-        category: product.category,
-        brand: product.brand,
-        price: product.price.toString(),
-        pricePerCase: product.pricePerCase.toString(),
-        stock: product.stock.toString(),
-        minStock: product.minStock.toString(),
-        packSize: product.packSize,
-        unit: product.unit,
-        description: product.description || '',
-      });
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+        const productData = await getProductById(productId);
+        setProduct(productData);
+        
+        // Pre-fill form with product data
+        setFormData({
+          name: productData.name || '',
+          sku: productData.sku || '',
+          category: productData.category || '',
+          brand: productData.brand || '',
+          price: productData.price?.toString() || '',
+          pricePerCase: productData.pricePerCase?.toString() || '',
+          stockQuantity: productData.stockQuantity?.toString() || '',
+          minStock: '10', // Default minimum stock
+          packSize: productData.packSize || '',
+          unit: productData.unit || 'unit',
+          description: productData.description || '',
+        });
+        
+        // Set current image as preview
+        if (productData.image) {
+          setImagePreview(productData.image);
+        }
+      } catch (error) {
+        console.error('Error fetching product:', error);
+        toast.error('Failed to load product data');
+        router.push('/admin/products');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (productId) {
+      fetchProduct();
     }
-    setLoading(false);
-  }, [productId]);
+  }, [productId, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -155,8 +147,8 @@ export default function EditProductPage() {
     if (!formData.pricePerCase || parseFloat(formData.pricePerCase) <= 0) {
       newErrors.pricePerCase = 'Valid case price is required';
     }
-    if (!formData.stock || parseInt(formData.stock) < 0) {
-      newErrors.stock = 'Valid stock quantity is required';
+    if (!formData.stockQuantity || parseInt(formData.stockQuantity) < 0) {
+      newErrors.stockQuantity = 'Valid stock quantity is required';
     }
     if (!formData.minStock || parseInt(formData.minStock) < 0) {
       newErrors.minStock = 'Valid minimum stock is required';
@@ -167,34 +159,54 @@ export default function EditProductPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validate()) {
       return;
     }
 
-    // Here you would normally send data to your API with FormData for image upload
-    const submitData = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
-      submitData.append(key, value);
-    });
-    
-    if (imageFile) {
-      submitData.append('image', imageFile);
-    }
+    try {
+      setSaving(true);
+      
+      const updateData = {
+        name: formData.name,
+        sku: formData.sku,
+        category: formData.category,
+        brand: formData.brand,
+        price: parseFloat(formData.price),
+        pricePerCase: parseFloat(formData.pricePerCase),
+        stockQuantity: parseInt(formData.stockQuantity),
+        packSize: formData.packSize,
+        unit: formData.unit,
+        description: formData.description,
+      };
 
-    console.log('Updated Product Data:', formData);
-    console.log('Image File:', imageFile);
-    alert('Product updated successfully!');
-    router.push('/admin/products');
+      await updateProduct(productId, updateData, imageFile || undefined);
+      
+      toast.success('Product updated successfully!');
+      router.push('/admin/products');
+    } catch (error: any) {
+      console.error('Error updating product:', error);
+      toast.error(error.response?.data?.message || 'Failed to update product');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
-      console.log('Deleting product:', productId);
-      alert('Product deleted successfully!');
-      router.push('/admin/products');
+      try {
+        setSaving(true);
+        await deleteProduct(productId);
+        toast.success('Product deleted successfully!');
+        router.push('/admin/products');
+      } catch (error: any) {
+        console.error('Error deleting product:', error);
+        toast.error(error.response?.data?.message || 'Failed to delete product');
+      } finally {
+        setSaving(false);
+      }
     }
   };
 
@@ -207,7 +219,18 @@ export default function EditProductPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <p className="text-muted-foreground">Loading product...</p>
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <p className="text-muted-foreground">Loading product...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <p className="text-muted-foreground">Product not found</p>
       </div>
     );
   }
@@ -502,15 +525,15 @@ export default function EditProductPage() {
                     Current Stock <span className="text-red-500">*</span>
                   </label>
                   <Input
-                    name="stock"
+                    name="stockQuantity"
                     type="number"
-                    value={formData.stock}
+                    value={formData.stockQuantity}
                     onChange={handleChange}
                     placeholder="100"
-                    className={errors.stock ? 'border-red-500' : ''}
+                    className={errors.stockQuantity ? 'border-red-500' : ''}
                   />
-                  {errors.stock && (
-                    <p className="text-red-500 text-sm mt-1">{errors.stock}</p>
+                  {errors.stockQuantity && (
+                    <p className="text-red-500 text-sm mt-1">{errors.stockQuantity}</p>
                   )}
                   <p className="text-sm text-muted-foreground mt-1">
                     Number of units currently in stock
@@ -539,15 +562,15 @@ export default function EditProductPage() {
               </div>
 
               {/* Stock Status Preview */}
-              {formData.stock && formData.minStock && (
+              {formData.stockQuantity && formData.minStock && (
                 <div className="p-4 rounded-lg border bg-gray-50">
                   <p className="text-sm font-medium mb-2">Stock Status Preview:</p>
                   <div className="flex items-center gap-2">
-                    {parseInt(formData.stock) === 0 ? (
+                    {parseInt(formData.stockQuantity) === 0 ? (
                       <Badge variant="secondary" className="bg-red-100 text-red-800">
                         Out of Stock
                       </Badge>
-                    ) : parseInt(formData.stock) <= parseInt(formData.minStock) ? (
+                    ) : parseInt(formData.stockQuantity) <= parseInt(formData.minStock) ? (
                       <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
                         Low Stock
                       </Badge>
@@ -557,7 +580,7 @@ export default function EditProductPage() {
                       </Badge>
                     )}
                     <span className="text-sm text-muted-foreground">
-                      {formData.stock} units available
+                      {formData.stockQuantity} units available
                     </span>
                   </div>
                 </div>
@@ -578,15 +601,25 @@ export default function EditProductPage() {
                   <X className="h-4 w-4" />
                   Cancel
                 </Button>
-                <Button type="submit" className="gap-2 bg-[#006e9d] hover:bg-[#005580] text-white shadow-md">
-                  <Save className="h-4 w-4" />
-                  Save Changes
+                <Button type="submit" disabled={saving} className="gap-2 bg-[#006e9d] hover:bg-[#005580] text-white shadow-md">
+                  {saving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4" />
+                      Save Changes
+                    </>
+                  )}
                 </Button>
               </div>
             </CardContent>
           </Card>
         </div>
       </form>
+      <Toaster position="top-right" richColors />
     </div>
   );
 }

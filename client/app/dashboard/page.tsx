@@ -1,16 +1,18 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAppSelector } from '@/lib/store/hooks';
-import { ShoppingBag, FileText, Package, User, Calendar, ChevronRight, TrendingUp } from 'lucide-react';
+import { ShoppingBag, FileText, Package, User, Calendar, ChevronRight, TrendingUp, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { OrderStatus } from '@/lib/store/slices/ordersSlice';
+import { getUserOrders, Order as APIOrder } from '@/lib/api/services/orderService';
+import { getUserProfile, User as APIUser } from '@/lib/api/services/authService';
 
 interface Stat {
   title: string;
@@ -24,25 +26,61 @@ interface Stat {
 export default function DashboardPage(): React.JSX.Element {
   const router = useRouter();
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
-  const { orders } = useAppSelector((state) => state.orders);
   const { items: cartItems } = useAppSelector((state) => state.cart);
+  const [orders, setOrders] = useState<APIOrder[]>([]);
+  const [userProfile, setUserProfile] = useState<APIUser | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!isAuthenticated) {
       router.push('/auth/login');
+      return;
     }
+
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const [userOrders, profile] = await Promise.all([
+          getUserOrders(),
+          getUserProfile()
+        ]);
+        setOrders(userOrders);
+        setUserProfile(profile);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
   }, [isAuthenticated, router]);
 
   if (!isAuthenticated) {
     return <></>;
   }
 
+  if (loading) {
+    return (
+      <>
+        <Header />
+        <div className="container mx-auto px-4 py-20 text-center">
+          <div className="flex items-center justify-center gap-2">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <span>Loading dashboard...</span>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
+
   // Calculate order stats
   const totalOrders = orders.length;
   const activeOrders = orders.filter(
-    (o) => o.status === 'pending' || o.status === 'processing' || o.status === 'shipped'
+    (o) => !o.isDelivered
   ).length;
-  const totalSpent = orders.reduce((sum, order) => sum + order.total, 0);
+  const totalSpent = orders.reduce((sum, order) => sum + order.totalPrice, 0);
 
   const formatDate = (dateString: string): string => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -96,11 +134,11 @@ export default function DashboardPage(): React.JSX.Element {
     },
     {
       title: 'Account Status',
-      value: user?.isApproved ? 'Approved' : 'Pending',
+      value: userProfile?.isAdmin ? 'Admin' : 'User',
       icon: User,
-      description: user?.accountType || 'N/A',
-      color: user?.isApproved ? 'text-green-600' : 'text-orange-600',
-      bgColor: user?.isApproved ? 'bg-green-100' : 'bg-orange-100',
+      description: userProfile?.businessName || 'N/A',
+      color: userProfile?.isAdmin ? 'text-purple-600' : 'text-blue-600',
+      bgColor: userProfile?.isAdmin ? 'bg-purple-100' : 'bg-blue-100',
     },
   ];
 
@@ -116,10 +154,10 @@ export default function DashboardPage(): React.JSX.Element {
           {/* Welcome Section */}
           <div className="mb-8">
             <h1 className="text-4xl font-bold mb-2">
-              Welcome back, {user?.name}!
+              Welcome back, {userProfile?.name || user?.name}!
             </h1>
             <p className="text-muted-foreground">
-              {user?.businessName && `${user.businessName} • `}
+              {userProfile?.businessName && `${userProfile.businessName} • `}
               Manage your wholesale account
             </p>
           </div>
@@ -193,17 +231,17 @@ export default function DashboardPage(): React.JSX.Element {
               <CardContent className="space-y-4">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Email</p>
-                  <p className="text-sm">{user?.email}</p>
+                  <p className="text-sm">{userProfile?.email || user?.email}</p>
                 </div>
-                {user?.businessName && (
+                {userProfile?.businessName && (
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Business</p>
-                    <p className="text-sm">{user.businessName}</p>
+                    <p className="text-sm">{userProfile.businessName}</p>
                   </div>
                 )}
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Account Type</p>
-                  <p className="text-sm capitalize">{user?.accountType}</p>
+                  <p className="text-sm capitalize">{userProfile?.isAdmin ? 'Admin' : 'User'}</p>
                 </div>
                 <Button variant="outline" className="w-full">
                   Edit Profile
@@ -245,19 +283,23 @@ export default function DashboardPage(): React.JSX.Element {
                 <div className="space-y-4">
                   {recentOrders.map((order) => (
                     <div 
-                      key={order.id} 
+                      key={order._id} 
                       className="p-4 border rounded-lg hover:shadow-md transition-shadow cursor-pointer"
-                      onClick={() => router.push(`/orders/${order.id}`)}
+                      onClick={() => router.push(`/orders/${order._id}`)}
                     >
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">
-                          <div className="font-semibold">#{order.orderNumber}</div>
-                          <span className={`inline-block px-2 py-1 text-xs font-medium rounded border ${getStatusColor(order.status)} capitalize`}>
-                            {order.status}
+                          <div className="font-semibold">#{order._id.slice(-8)}</div>
+                          <span className={`inline-block px-2 py-1 text-xs font-medium rounded border ${
+                            order.isDelivered ? 'bg-green-100 text-green-800 border-green-200' :
+                            order.isPaid ? 'bg-blue-100 text-blue-800 border-blue-200' :
+                            'bg-yellow-100 text-yellow-800 border-yellow-200'
+                          } capitalize`}>
+                            {order.isDelivered ? 'delivered' : order.isPaid ? 'paid' : 'pending'}
                           </span>
                         </div>
                         <div className="text-right">
-                          <div className="font-bold text-primary">${order.total.toFixed(2)}</div>
+                          <div className="font-bold text-primary">${order.totalPrice.toFixed(2)}</div>
                           <div className="text-xs text-muted-foreground flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
                             {formatDate(order.createdAt)}
@@ -267,9 +309,9 @@ export default function DashboardPage(): React.JSX.Element {
                       
                       {/* Order Items Preview */}
                       <div className="flex gap-2 mb-3">
-                        {order.items.slice(0, 3).map((item) => (
+                        {order.orderItems.slice(0, 3).map((item) => (
                           <div 
-                            key={item.id} 
+                            key={item._id || item.product} 
                             className="relative h-12 w-12 flex-shrink-0 rounded-md overflow-hidden bg-gray-100"
                           >
                             <Image
@@ -281,16 +323,16 @@ export default function DashboardPage(): React.JSX.Element {
                             />
                           </div>
                         ))}
-                        {order.items.length > 3 && (
+                        {order.orderItems.length > 3 && (
                           <div className="h-12 w-12 flex-shrink-0 rounded-md bg-gray-100 flex items-center justify-center">
                             <span className="text-xs font-medium text-muted-foreground">
-                              +{order.items.length - 3}
+                              +{order.orderItems.length - 3}
                             </span>
                           </div>
                         )}
                         <div className="flex-1 flex items-center">
                           <p className="text-sm text-muted-foreground">
-                            {order.items.length} item{order.items.length > 1 ? 's' : ''}
+                            {order.orderItems.length} item{order.orderItems.length > 1 ? 's' : ''}
                           </p>
                         </div>
                       </div>

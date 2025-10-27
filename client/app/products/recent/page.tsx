@@ -1,107 +1,128 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import CategoryNav from '@/components/layout/CategoryNav';
 import ProductSection from '@/components/home/ProductSection';
 import { Toaster } from 'sonner';
 import { Product } from '@/lib/store/slices/productsSlice';
-
-// Mock recent/recently purchased products (you can replace this with real user data)
-const recentProducts: Product[] = [
-  {
-    id: 'recent-1',
-    name: 'Fanta, Orange, Mexican',
-    category: 'Beverages',
-    price: 1.50,
-    pricePerCase: 35.99,
-    unit: 'ea',
-    packSize: '16.9 oz (24 Pack)',
-    image: 'https://placehold.co/400x400/FF6B35/white?text=Fanta+Orange',
-    description: 'Refreshing orange soda with natural flavors',
-    inStock: true,
-    isFeatured: false,
-    isOnOffer: true,
-    brand: 'Fanta',
-  },
-  {
-    id: 'recent-2',
-    name: 'Cheetos Crunchy',
-    category: 'Snacks',
-    price: 2.25,
-    pricePerCase: 26.99,
-    unit: 'ea',
-    packSize: '8.5 oz (12 Pack)',
-    image: 'https://placehold.co/400x400/F59E0B/white?text=Cheetos',
-    description: 'Classic crunchy cheese-flavored snacks',
-    inStock: true,
-    isFeatured: false,
-    isOnOffer: false,
-    brand: 'Cheetos',
-  },
-  {
-    id: 'recent-3',
-    name: 'Tide Pods',
-    category: 'Cleaning & Laundry',
-    price: 0.58,
-    pricePerCase: 27.99,
-    unit: 'ea',
-    packSize: '14 oz (48 Pack)',
-    image: 'https://placehold.co/400x400/059669/white?text=Tide+Pods',
-    description: 'Convenient laundry detergent pods',
-    inStock: true,
-    isFeatured: false,
-    isOnOffer: true,
-    brand: 'Tide',
-  },
-  {
-    id: 'recent-4',
-    name: 'Doritos Nacho Cheese',
-    category: 'Snacks',
-    price: 2.75,
-    pricePerCase: 32.99,
-    unit: 'ea',
-    packSize: '9.75 oz (12 Pack)',
-    image: 'https://placehold.co/400x400/FF6B35/white?text=Doritos',
-    description: 'Classic nacho cheese flavored tortilla chips',
-    inStock: true,
-    isFeatured: false,
-    isOnOffer: false,
-    brand: 'Doritos',
-  },
-  {
-    id: 'recent-5',
-    name: 'Sprite, Mexican',
-    category: 'Beverages',
-    price: 1.50,
-    pricePerCase: 35.99,
-    unit: 'ea',
-    packSize: '16.9 oz (24 Pack)',
-    image: 'https://placehold.co/400x400/10B981/white?text=Sprite',
-    description: 'Crisp lemon-lime soda made with real cane sugar',
-    inStock: true,
-    isFeatured: false,
-    isOnOffer: true,
-    brand: 'Sprite',
-  },
-  {
-    id: 'recent-6',
-    name: 'Marlboro Red',
-    category: 'Tobacco',
-    price: 8.99,
-    pricePerCase: 107.99,
-    unit: 'ea',
-    packSize: '20 cigarettes (10 Pack)',
-    image: 'https://placehold.co/400x400/DC2626/white?text=Marlboro',
-    description: 'Classic full-flavor cigarettes',
-    inStock: true,
-    isFeatured: false,
-    isOnOffer: false,
-    brand: 'Marlboro',
-  },
-];
+import { getUserOrders, Order } from '@/lib/api/services/orderService';
+import { useAppSelector } from '@/lib/store/hooks';
+import { Loader2 } from 'lucide-react';
 
 export default function RecentProductsPage(): React.JSX.Element {
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserOrders = async () => {
+      if (!isAuthenticated) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const userOrders = await getUserOrders();
+        setOrders(userOrders);
+      } catch (error) {
+        console.error('Error fetching user orders:', error);
+        setOrders([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserOrders();
+  }, [isAuthenticated]);
+
+  // Extract recent products from orders
+  const recentProducts: Product[] = orders
+    .flatMap(order => order.orderItems)
+    .reduce((unique: Product[], item) => {
+      // Check if product already exists in unique array
+      const exists = unique.find(p => p.id === item.product);
+      if (!exists) {
+        unique.push({
+          id: item.product,
+          name: item.name,
+          category: 'Recent', // We don't have category in order items
+          price: item.price,
+          pricePerCase: item.price * 12, // Estimate case price
+          unit: item.unit,
+          packSize: item.packSize,
+          image: item.image,
+          description: `Recently purchased ${item.name}`,
+          inStock: true,
+          isFeatured: false,
+          isOnOffer: false,
+          brand: 'Recent',
+        });
+      }
+      return unique;
+    }, [])
+    .slice(0, 12); // Limit to 12 recent products
+
+  const formatDate = (dateString: string): string => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
+
+  const getStatusColor = (isDelivered: boolean, isPaid: boolean): string => {
+    if (isDelivered) return 'bg-green-100 text-green-800';
+    if (isPaid) return 'bg-blue-100 text-blue-800';
+    return 'bg-yellow-100 text-yellow-800';
+  };
+
+  const getStatusText = (isDelivered: boolean, isPaid: boolean): string => {
+    if (isDelivered) return 'Delivered';
+    if (isPaid) return 'Processing';
+    return 'Pending';
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <>
+        <Header />
+        <CategoryNav />
+        <main className="container mx-auto px-4 py-8 min-h-screen">
+          <div className="text-center py-20">
+            <h1 className="text-4xl font-bold mb-4 text-primary">Please Login</h1>
+            <p className="text-lg text-muted-foreground mb-6">
+              You need to be logged in to view your recent orders
+            </p>
+            <a href="/auth/login" className="bg-primary text-primary-foreground px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors">
+              Login
+            </a>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  if (loading) {
+    return (
+      <>
+        <Header />
+        <CategoryNav />
+        <main className="container mx-auto px-4 py-8 min-h-screen">
+          <div className="text-center py-20">
+            <div className="flex items-center justify-center gap-2">
+              <Loader2 className="h-6 w-6 animate-spin" />
+              <span>Loading your recent orders...</span>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
   return (
     <>
       <Header />
@@ -178,66 +199,66 @@ export default function RecentProductsPage(): React.JSX.Element {
         {/* Order History */}
         <div className="mt-16">
           <h2 className="text-3xl font-bold text-center mb-8">Recent Order History</h2>
-          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order #</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#WM-2024-001</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Dec 15, 2024</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">12 items</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$156.99</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                        Delivered
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button className="text-primary hover:text-primary/80">Reorder</button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#WM-2024-002</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Dec 8, 2024</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">8 items</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$89.50</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                        Delivered
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button className="text-primary hover:text-primary/80">Reorder</button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#WM-2024-003</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Dec 1, 2024</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">15 items</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$203.75</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                        Delivered
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button className="text-primary hover:text-primary/80">Reorder</button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+          {orders.length === 0 ? (
+            <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
+              <div className="text-6xl mb-4">📦</div>
+              <h3 className="text-xl font-semibold mb-2">No Orders Yet</h3>
+              <p className="text-muted-foreground mb-4">
+                You haven't placed any orders yet. Start shopping to see your order history here.
+              </p>
+              <a href="/products" className="bg-primary text-primary-foreground px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors">
+                Start Shopping
+              </a>
             </div>
-          </div>
+          ) : (
+            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order #</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {orders.slice(0, 10).map((order) => (
+                      <tr key={order._id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          #{order._id.slice(-8)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {formatDate(order.createdAt)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {order.orderItems.length} items
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          ${order.totalPrice.toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.isDelivered, order.isPaid)}`}>
+                            {getStatusText(order.isDelivered, order.isPaid)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <a 
+                            href={`/orders/${order._id}`}
+                            className="text-primary hover:text-primary/80"
+                          >
+                            View Details
+                          </a>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
       </main>
 

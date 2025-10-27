@@ -1,107 +1,53 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import CategoryNav from '@/components/layout/CategoryNav';
 import ProductSection from '@/components/home/ProductSection';
 import { Toaster } from 'sonner';
 import { Product } from '@/lib/store/slices/productsSlice';
-
-// Mock top-selling products (you can replace this with real data)
-const topSellingProducts: Product[] = [
-  {
-    id: 'top-1',
-    name: 'Coca Cola, Mexican',
-    category: 'Beverages',
-    price: 1.50,
-    pricePerCase: 35.99,
-    unit: 'ea',
-    packSize: '16.9 oz (24 Pack)',
-    image: 'https://placehold.co/400x400/1C75BC/white?text=Coca+Cola',
-    description: 'Authentic Mexican Coca Cola made with real cane sugar',
-    inStock: true,
-    isFeatured: true,
-    isOnOffer: true,
-    brand: 'Coca Cola',
-  },
-  {
-    id: 'top-2',
-    name: 'Takis Fuego',
-    category: 'Snacks',
-    price: 2.50,
-    pricePerCase: 29.99,
-    unit: 'ea',
-    packSize: '9.9 oz (12 Pack)',
-    image: 'https://placehold.co/400x400/E31937/white?text=Takis+Fuego',
-    description: 'Spicy rolled corn tortilla chips with intense heat',
-    inStock: true,
-    isFeatured: true,
-    isOnOffer: false,
-    brand: 'Takis',
-  },
-  {
-    id: 'top-3',
-    name: 'Gain Liquid Laundry Detergent',
-    category: 'Cleaning & Laundry',
-    price: 1.17,
-    pricePerCase: 13.99,
-    unit: 'ea',
-    packSize: '10 oz (12 Pack)',
-    image: 'https://placehold.co/400x400/FF8200/white?text=Gain+Detergent',
-    description: 'Powerful cleaning with amazing scent',
-    inStock: true,
-    isFeatured: true,
-    isOnOffer: true,
-    brand: 'Gain',
-  },
-  {
-    id: 'top-4',
-    name: 'Clorox Liquid Disinfectant',
-    category: 'Cleaning & Laundry',
-    price: 1.29,
-    pricePerCase: 35.99,
-    unit: 'ea',
-    packSize: '11 oz (28 Pack)',
-    image: 'https://placehold.co/400x400/059669/white?text=Clorox',
-    description: 'Kills 99.9% of bacteria and viruses',
-    inStock: true,
-    isFeatured: true,
-    isOnOffer: false,
-    brand: 'Clorox',
-  },
-  {
-    id: 'top-5',
-    name: 'Häagen-Dazs Ice Cream',
-    category: 'Ice Cream',
-    price: 4.99,
-    pricePerCase: 59.99,
-    unit: 'ea',
-    packSize: '14 oz (12 Pack)',
-    image: 'https://placehold.co/400x400/92400E/white?text=Häagen-Dazs',
-    description: 'Premium ice cream with rich, creamy texture',
-    inStock: true,
-    isFeatured: true,
-    isOnOffer: true,
-    brand: 'Häagen-Dazs',
-  },
-  {
-    id: 'top-6',
-    name: 'AXE Body Spray',
-    category: 'Health & Beauty',
-    price: 3.99,
-    pricePerCase: 47.99,
-    unit: 'ea',
-    packSize: '4 oz (12 Pack)',
-    image: 'https://placehold.co/400x400/000000/white?text=AXE',
-    description: 'Long-lasting fragrance for men',
-    inStock: true,
-    isFeatured: true,
-    isOnOffer: false,
-    brand: 'AXE',
-  },
-];
+import { getTopSellingProducts } from '@/lib/api/services/productService';
+import { Loader2 } from 'lucide-react';
 
 export default function TopSellingPage(): React.JSX.Element {
+  const [topSellingProducts, setTopSellingProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTopSellingProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await getTopSellingProducts(20);
+        setTopSellingProducts(response.products);
+      } catch (error) {
+        console.error('Error fetching top selling products:', error);
+        setTopSellingProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTopSellingProducts();
+  }, []);
+
+  if (loading) {
+    return (
+      <>
+        <Header />
+        <CategoryNav />
+        <main className="container mx-auto px-4 py-8 min-h-screen">
+          <div className="text-center py-20">
+            <div className="flex items-center justify-center gap-2">
+              <Loader2 className="h-6 w-6 animate-spin" />
+              <span>Loading top selling products...</span>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
   return (
     <>
       <Header />
@@ -117,48 +63,75 @@ export default function TopSellingPage(): React.JSX.Element {
         </div>
 
         {/* Top Selling Products Grid */}
-        <ProductSection
-          title="🔥 Best Sellers"
-          subtitle="Our most popular products this month"
-          products={topSellingProducts}
-          columns={6}
-        />
+        {topSellingProducts.length > 0 ? (
+          <ProductSection
+            title="🔥 Best Sellers"
+            subtitle="Our most popular products based on sales data"
+            products={topSellingProducts}
+            columns={6}
+          />
+        ) : (
+          <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
+            <div className="text-6xl mb-4">📊</div>
+            <h3 className="text-xl font-semibold mb-2">No Sales Data Yet</h3>
+            <p className="text-muted-foreground mb-4">
+              We don't have enough sales data to show top selling products yet. 
+              Check back after some orders have been placed.
+            </p>
+            <a href="/products" className="bg-primary text-primary-foreground px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors">
+              Browse All Products
+            </a>
+          </div>
+        )}
 
         {/* Additional Categories */}
-        <div className="mt-16">
-          <h2 className="text-3xl font-bold text-center mb-8">Top Categories</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg">
-              <h3 className="text-xl font-semibold text-blue-800 mb-2">Beverages</h3>
-              <p className="text-blue-600 mb-4">Top-selling drinks and refreshments</p>
-              <div className="text-sm text-blue-700">
-                <p>• Coca Cola Mexican</p>
-                <p>• Fanta Orange</p>
-                <p>• Sprite</p>
-              </div>
-            </div>
-            
-            <div className="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-lg">
-              <h3 className="text-xl font-semibold text-red-800 mb-2">Snacks</h3>
-              <p className="text-red-600 mb-4">Popular chips and treats</p>
-              <div className="text-sm text-red-700">
-                <p>• Takis Fuego</p>
-                <p>• Cheetos</p>
-                <p>• Doritos</p>
-              </div>
-            </div>
-            
-            <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-lg">
-              <h3 className="text-xl font-semibold text-green-800 mb-2">Cleaning</h3>
-              <p className="text-green-600 mb-4">Essential cleaning supplies</p>
-              <div className="text-sm text-green-700">
-                <p>• Gain Detergent</p>
-                <p>• Clorox Disinfectant</p>
-                <p>• Tide Pods</p>
-              </div>
+        {topSellingProducts.length > 0 && (
+          <div className="mt-16">
+            <h2 className="text-3xl font-bold text-center mb-8">Top Categories</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {(() => {
+                // Group products by category
+                const categoryGroups = topSellingProducts.reduce((acc, product) => {
+                  const category = product.category || 'Other';
+                  if (!acc[category]) {
+                    acc[category] = [];
+                  }
+                  acc[category].push(product);
+                  return acc;
+                }, {} as Record<string, Product[]>);
+
+                // Get top 3 categories
+                const topCategories = Object.entries(categoryGroups)
+                  .sort(([,a], [,b]) => b.length - a.length)
+                  .slice(0, 3);
+
+                const categoryColors = [
+                  { bg: 'from-blue-50 to-blue-100', text: 'text-blue-800', subtext: 'text-blue-600', items: 'text-blue-700' },
+                  { bg: 'from-red-50 to-red-100', text: 'text-red-800', subtext: 'text-red-600', items: 'text-red-700' },
+                  { bg: 'from-green-50 to-green-100', text: 'text-green-800', subtext: 'text-green-600', items: 'text-green-700' },
+                ];
+
+                return topCategories.map(([category, products], index) => {
+                  const colors = categoryColors[index] || categoryColors[0];
+                  return (
+                    <div key={category} className={`bg-gradient-to-br ${colors.bg} p-6 rounded-lg`}>
+                      <h3 className={`text-xl font-semibold ${colors.text} mb-2`}>{category}</h3>
+                      <p className={`${colors.subtext} mb-4`}>
+                        {products.length} top-selling {category.toLowerCase()} products
+                      </p>
+                      <div className={`text-sm ${colors.items}`}>
+                        {products.slice(0, 3).map((product, idx) => (
+                          <p key={idx}>• {product.name}</p>
+                        ))}
+                        {products.length > 3 && <p>• +{products.length - 3} more</p>}
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
             </div>
           </div>
-        </div>
+        )}
 
         {/* Call to Action */}
         <div className="mt-16 bg-primary/5 rounded-lg p-8 text-center">

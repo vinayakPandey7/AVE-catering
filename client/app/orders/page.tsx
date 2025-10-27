@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -15,17 +15,39 @@ import {
   Calendar,
   ShoppingBag,
   Search,
-  Filter
+  Filter,
+  Loader2
 } from 'lucide-react';
 import { Order, OrderStatus } from '@/lib/store/slices/ordersSlice';
 import { Input } from '@/components/ui/input';
+import { getUserOrders, Order as APIOrder } from '@/lib/api/services/orderService';
 
 export default function OrdersPage(): React.JSX.Element {
   const router = useRouter();
-  const { orders } = useAppSelector((state) => state.orders);
   const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const [orders, setOrders] = useState<APIOrder[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all'>('all');
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      if (!isAuthenticated) return;
+      
+      try {
+        setLoading(true);
+        const userOrders = await getUserOrders();
+        setOrders(userOrders);
+      } catch (error) {
+        console.error('Error fetching orders:', error);
+        setOrders([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, [isAuthenticated]);
 
   const formatDate = (dateString: string): string => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -57,14 +79,21 @@ export default function OrdersPage(): React.JSX.Element {
 
     // Filter by status
     if (statusFilter !== 'all') {
-      filtered = filtered.filter((order) => order.status === statusFilter);
+      filtered = filtered.filter((order) => {
+        // Map API status to our status filter
+        if (statusFilter === 'pending') return !order.isPaid;
+        if (statusFilter === 'processing') return order.isPaid && !order.isDelivered;
+        if (statusFilter === 'shipped') return order.isPaid && !order.isDelivered;
+        if (statusFilter === 'delivered') return order.isDelivered;
+        return true;
+      });
     }
 
     // Filter by search query
     if (searchQuery) {
       filtered = filtered.filter((order) => 
-        order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.items.some((item) => item.name.toLowerCase().includes(searchQuery.toLowerCase()))
+        order._id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        order.orderItems.some((item) => item.name.toLowerCase().includes(searchQuery.toLowerCase()))
       );
     }
 
@@ -73,10 +102,10 @@ export default function OrdersPage(): React.JSX.Element {
 
   const orderStats = useMemo(() => {
     const total = orders.length;
-    const pending = orders.filter((o) => o.status === 'pending').length;
-    const processing = orders.filter((o) => o.status === 'processing').length;
-    const shipped = orders.filter((o) => o.status === 'shipped').length;
-    const delivered = orders.filter((o) => o.status === 'delivered').length;
+    const pending = orders.filter((o) => !o.isPaid).length;
+    const processing = orders.filter((o) => o.isPaid && !o.isDelivered).length;
+    const shipped = orders.filter((o) => o.isPaid && !o.isDelivered).length;
+    const delivered = orders.filter((o) => o.isDelivered).length;
 
     return { total, pending, processing, shipped, delivered };
   }, [orders]);
@@ -94,6 +123,21 @@ export default function OrdersPage(): React.JSX.Element {
           <Link href="/auth/login">
             <Button>Login</Button>
           </Link>
+        </div>
+        <Footer />
+      </>
+    );
+  }
+
+  if (loading) {
+    return (
+      <>
+        <Header />
+        <div className="container mx-auto px-4 py-20 text-center">
+          <div className="flex items-center justify-center gap-2">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <span>Loading orders...</span>
+          </div>
         </div>
         <Footer />
       </>
@@ -216,9 +260,13 @@ export default function OrdersPage(): React.JSX.Element {
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                         <div>
                           <div className="flex items-center gap-3 mb-1">
-                            <h3 className="text-xl font-bold">#{order.orderNumber}</h3>
-                            <span className={`inline-block px-2 py-1 text-xs font-medium rounded border ${getStatusColor(order.status)} capitalize`}>
-                              {order.status}
+                            <h3 className="text-xl font-bold">#{order._id.slice(-8)}</h3>
+                            <span className={`inline-block px-2 py-1 text-xs font-medium rounded border ${
+                              order.isDelivered ? 'bg-green-100 text-green-800 border-green-200' :
+                              order.isPaid ? 'bg-blue-100 text-blue-800 border-blue-200' :
+                              'bg-yellow-100 text-yellow-800 border-yellow-200'
+                            } capitalize`}>
+                              {order.isDelivered ? 'delivered' : order.isPaid ? 'paid' : 'pending'}
                             </span>
                           </div>
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -226,19 +274,19 @@ export default function OrdersPage(): React.JSX.Element {
                               <Calendar className="h-4 w-4" />
                               {formatDate(order.createdAt)}
                             </span>
-                            <span>{order.items.length} item{order.items.length > 1 ? 's' : ''}</span>
+                            <span>{order.orderItems.length} item{order.orderItems.length > 1 ? 's' : ''}</span>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-2xl font-bold text-primary">${order.total.toFixed(2)}</p>
+                          <p className="text-2xl font-bold text-primary">${order.totalPrice.toFixed(2)}</p>
                         </div>
                       </div>
 
                       {/* Order Items Preview */}
                       <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
-                        {order.items.slice(0, 4).map((item) => (
+                        {order.orderItems.slice(0, 4).map((item) => (
                           <div 
-                            key={item.id} 
+                            key={item._id || item.product} 
                             className="relative h-16 w-16 flex-shrink-0 rounded-md overflow-hidden bg-gray-100"
                           >
                             <Image
@@ -250,10 +298,10 @@ export default function OrdersPage(): React.JSX.Element {
                             />
                           </div>
                         ))}
-                        {order.items.length > 4 && (
+                        {order.orderItems.length > 4 && (
                           <div className="h-16 w-16 flex-shrink-0 rounded-md bg-gray-100 flex items-center justify-center">
                             <span className="text-sm font-medium text-muted-foreground">
-                              +{order.items.length - 4}
+                              +{order.orderItems.length - 4}
                             </span>
                           </div>
                         )}
@@ -261,13 +309,13 @@ export default function OrdersPage(): React.JSX.Element {
 
                       {/* Order Actions */}
                       <div className="flex gap-3">
-                        <Link href={`/orders/${order.id}`} className="flex-1">
+                        <Link href={`/orders/${order._id}`} className="flex-1">
                           <Button variant="default" className="w-full">
                             Track Order
                             <ChevronRight className="ml-2 h-4 w-4" />
                           </Button>
                         </Link>
-                        {order.status === 'delivered' && (
+                        {order.isDelivered && (
                           <Button variant="outline">
                             Order Again
                           </Button>
