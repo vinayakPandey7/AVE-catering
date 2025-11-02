@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import Order from './models/orderModel.ts';
-import Product from './models/productModel.ts';
-import User from './models/userModel.ts';
-import connectDB from './config/db.ts';
+import Order from './models/orderModel.js';
+import Product from './models/productModel.js';
+import User from './models/userModel.js';
+import connectDB from './config/db.js';
 
 // Load environment variables
 dotenv.config();

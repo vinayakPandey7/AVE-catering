@@ -1,6 +1,7 @@
 import asyncHandler from "express-async-handler";
 import multer from "multer";
 import * as XLSX from 'xlsx';
+import { Request, Response } from "express";
 import Product from "../models/productModel.js";
 import Category from "../models/categoryModel.js";
 import { uploadToCloudinary } from "../config/cloudinary.js";
@@ -18,7 +19,7 @@ const upload = multer({
         file.mimetype === 'application/vnd.ms-excel') {
       cb(null, true);
     } else {
-      cb(new Error('Only Excel files are allowed'), false);
+      cb(null, false);
     }
   },
   limits: {
@@ -50,7 +51,7 @@ const uploadExcelFile = asyncHandler(async (req: MulterRequest, res) => {
     });
   } catch (error) {
     res.status(400);
-    throw new Error('Error parsing Excel file: ' + error.message);
+    throw new Error('Error parsing Excel file: ' + (error instanceof Error ? error.message : String(error)));
   }
 });
 
@@ -98,7 +99,7 @@ const importCategories = asyncHandler(async (req, res) => {
     });
   } catch (error) {
     res.status(400);
-    throw new Error('Error importing categories: ' + error.message);
+    throw new Error('Error importing categories: ' + (error instanceof Error ? error.message : String(error)));
   }
 });
 
@@ -174,7 +175,7 @@ const importProducts = asyncHandler(async (req, res) => {
           createdProducts.push(newProduct);
         }
       } catch (error) {
-        errors.push(`Row ${i + 1}: ${error.message}`);
+        errors.push(`Row ${i + 1}: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
 
@@ -188,7 +189,7 @@ const importProducts = asyncHandler(async (req, res) => {
     });
   } catch (error) {
     res.status(400);
-    throw new Error('Error importing products: ' + error.message);
+    throw new Error('Error importing products: ' + (error instanceof Error ? error.message : String(error)));
   }
 });
 
@@ -204,7 +205,7 @@ const getImportPreview = asyncHandler(async (req, res) => {
   }
 
   try {
-    let preview = [];
+    let preview: any[] = [];
     
     if (type === 'categories') {
       const categories = [...new Set(data.map(row => row.Category || row.category).filter(Boolean))];
@@ -236,7 +237,7 @@ const getImportPreview = asyncHandler(async (req, res) => {
     });
   } catch (error) {
     res.status(400);
-    throw new Error('Error generating preview: ' + error.message);
+    throw new Error('Error generating preview: ' + (error instanceof Error ? error.message : String(error)));
   }
 });
 

@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES6",
+    "target": "ES2020",
     "module": "NodeNext",
     "rootDir": "./",
     "outDir": "./dist",
@@ -10,8 +10,11 @@
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "NodeNext",
     "resolveJsonModule": true,
-        "noImplicitAny": true
+    "noImplicitAny": true,
+    "allowImportingTsExtensions": false,
+    "declaration": false,
+    "sourceMap": false
   },
   "include": ["**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "dist", "create-sample-orders.ts", "seed-sample-data.ts"]
 }

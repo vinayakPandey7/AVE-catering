@@ -33,6 +33,12 @@ const orderSchema = new mongoose.Schema({
   paidAt: { type: Date },
   isDelivered: { type: Boolean, required: true, default: false },
   deliveredAt: { type: Date },
+  status: { type: String, enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'], default: 'pending' },
+  processedAt: { type: Date },
+  shippedAt: { type: Date },
+  cancelledAt: { type: Date },
+  trackingNumber: { type: String },
+  notes: { type: String },
 }, { timestamps: true });
 
 const Order = mongoose.model('Order', orderSchema);

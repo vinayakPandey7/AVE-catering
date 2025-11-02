@@ -2,6 +2,10 @@
 
 # Build script for Render deployment
 
+# Clean previous build
+echo "Cleaning previous build..."
+rm -rf dist
+
 # Install dependencies
 echo "Installing dependencies..."
 pnpm install --frozen-lockfile
