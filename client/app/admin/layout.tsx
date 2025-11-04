@@ -179,7 +179,7 @@ export default function AdminLayout({
         {/* Page content */}
         <main className="p-4 sm:p-6 lg:p-8 min-h-screen">
           <div className="space-y-6">
-            <ServerStatusCheck />
+            {/* <ServerStatusCheck /> */}
             {children}
           </div>
         </main>
