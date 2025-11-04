@@ -10,19 +10,82 @@ import { useAppSelector } from '@/lib/store/hooks';
 import Image from 'next/image';
 import Link from 'next/link';
 import { CheckCircle2, Package, Truck, MapPin, CreditCard, Calendar, ArrowRight } from 'lucide-react';
-import { Order } from '@/lib/store/slices/ordersSlice';
+import { Order as APIOrder } from '@/lib/api/services/orderService';
+
+interface OrderItemView {
+  id: string;
+  name: string;
+  image: string;
+  price: number;
+  quantity: number;
+  packSize: string;
+}
+
+interface ShippingAddressView {
+  fullName: string;
+  email: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  phone: string;
+}
+
+interface OrderView {
+  id: string;
+  orderNumber: string;
+  createdAt: string;
+  estimatedDelivery: string;
+  status: string;
+  paymentMethod: string;
+  subtotal: number;
+  shipping: number;
+  tax: number;
+  total: number;
+  items: OrderItemView[];
+  shippingAddress: ShippingAddressView;
+}
 
 export default function OrderConfirmationPage(): React.JSX.Element {
   const router = useRouter();
   const params = useParams();
   const orderId = params.orderId as string;
   const { orders } = useAppSelector((state) => state.orders);
-  const [order, setOrder] = useState<Order | null>(null);
+  const [order, setOrder] = useState<OrderView | null>(null);
 
   useEffect(() => {
-    const foundOrder = orders.find((o) => o.id === orderId);
-    if (foundOrder) {
-      setOrder(foundOrder);
+    const found = orders.find((o: APIOrder) => o._id === orderId);
+    if (found) {
+      const view: OrderView = {
+        id: found._id,
+        orderNumber: found._id.slice(-8).toUpperCase(),
+        createdAt: found.createdAt,
+        estimatedDelivery: new Date(new Date(found.createdAt).getTime() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+        status: found.isDelivered ? 'delivered' : 'pending',
+        paymentMethod: found.paymentMethod || 'N/A',
+        subtotal: found.itemsPrice,
+        shipping: found.shippingPrice,
+        tax: found.taxPrice,
+        total: found.totalPrice,
+        items: found.orderItems.map((it) => ({
+          id: it.product,
+          name: it.name,
+          image: it.image,
+          price: it.price,
+          quantity: it.quantity,
+          packSize: it.packSize,
+        })),
+        shippingAddress: {
+          fullName: found.user.name,
+          email: found.user.email,
+          address: found.shippingAddress.address,
+          city: found.shippingAddress.city,
+          state: found.shippingAddress.state,
+          zip: found.shippingAddress.zipCode,
+          phone: '',
+        },
+      };
+      setOrder(view);
     } else {
       // Order not found, redirect to orders page
       setTimeout(() => {

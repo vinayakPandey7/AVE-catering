@@ -28,7 +28,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { getAllOrders, updateOrder, deleteOrder, getOrderStats, Order } from '@/lib/api/services/orderService';
+import { getAllOrders, updateOrder, deleteOrder, getOrderStats, Order, OrderStats } from '@/lib/api/services/orderService';
 
 // Mock orders data
 const mockOrders = [
@@ -194,11 +194,11 @@ export default function OrdersPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalOrders, setTotalOrders] = useState(0);
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<OrderStats>({
     totalOrders: 0,
     totalRevenue: 0,
     recentOrders: 0,
-    statusBreakdown: []
+    statusBreakdown: [],
   });
 
   useEffect(() => {
@@ -221,8 +221,45 @@ export default function OrdersPage() {
       setTotalOrders(response.pagination.total);
     } catch (error) {
       console.error('Error fetching orders:', error);
-      // Fallback to mock data for development
-      setOrders(mockOrders);
+      // Fallback to mock data for development: map to API Order shape
+      setOrders(
+        mockOrders.map((m) => ({
+          _id: m.id,
+          orderItems: Array.from({ length: m.items }).map((_, idx) => ({
+            _id: String(idx + 1),
+            product: `mock-product-${idx + 1}`,
+            name: 'Item',
+            image: '',
+            price: m.total / Math.max(m.items, 1),
+            quantity: 1,
+            packSize: '1',
+            unit: 'ea',
+          })),
+          user: {
+            _id: 'mock-user',
+            name: m.customer.name,
+            email: m.customer.email,
+          },
+          shippingAddress: {
+            address: '',
+            city: '',
+            state: '',
+            zipCode: '',
+            country: '',
+          },
+          paymentMethod: 'N/A',
+          itemsPrice: m.total,
+          taxPrice: 0,
+          shippingPrice: 0,
+          totalPrice: m.total,
+          isPaid: m.paymentStatus === 'paid',
+          paidAt: m.paymentStatus === 'paid' ? m.orderDate : undefined,
+          isDelivered: m.status === 'delivered',
+          deliveredAt: m.status === 'delivered' ? (m as any).deliveredDate || m.estimatedDelivery : undefined,
+          createdAt: m.orderDate,
+          updatedAt: m.orderDate,
+        }))
+      );
     } finally {
       setLoading(false);
     }

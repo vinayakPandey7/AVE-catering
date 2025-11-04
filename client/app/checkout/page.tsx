@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAppSelector, useAppDispatch } from '@/lib/store/hooks';
 import { clearCart } from '@/lib/store/slices/cartSlice';
-import { createOrderAsync, Order } from '@/lib/store/slices/ordersSlice';
+import { createOrderAsync } from '@/lib/store/slices/ordersSlice';
+import { CreateOrderRequest } from '@/lib/api/services/orderService';
 import Image from 'next/image';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
@@ -80,31 +81,28 @@ export default function CheckoutPage(): React.JSX.Element {
       const estimatedDeliveryDate = new Date();
       estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 5);
 
-      const order: Order = {
-        id: orderId,
-        orderNumber,
-        userId: user?.id || '',
-        userName: user?.name || formData.fullName,
-        userEmail: user?.email || formData.email,
-        items: [...items],
+      const order: CreateOrderRequest = {
+        orderItems: items.map((it) => ({
+          product: it.id,
+          name: it.name,
+          image: it.image,
+          price: it.price,
+          quantity: it.quantity,
+          packSize: it.packSize,
+          unit: it.unit,
+        })),
         shippingAddress: {
-          fullName: formData.fullName,
-          email: formData.email,
-          phone: formData.phone,
           address: formData.address,
           city: formData.city,
           state: formData.state,
-          zip: formData.zip,
+          zipCode: formData.zip,
+          country: 'US',
         },
         paymentMethod: formData.paymentMethod,
-        subtotal: totalAmount,
-        shipping: shippingCost,
-        tax: tax,
-        total: grandTotal,
-        status: 'pending',
-        createdAt,
-        updatedAt: createdAt,
-        estimatedDelivery: estimatedDeliveryDate.toISOString(),
+        itemsPrice: totalAmount,
+        taxPrice: tax,
+        shippingPrice: shippingCost,
+        totalPrice: grandTotal,
       };
 
       // Create order in Redux store

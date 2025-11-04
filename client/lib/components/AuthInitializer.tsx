@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useAppDispatch } from '@/lib/store/hooks';
 import { loadUserAsync } from '@/lib/store/slices/authSlice';
 import { setAuthToken } from '@/lib/api/services/authService';
 
 export function AuthInitializer({ children }: { children: React.ReactNode }) {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     // Check if there's a token in localStorage

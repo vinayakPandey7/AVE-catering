@@ -10,7 +10,6 @@ import { useAppSelector } from '@/lib/store/hooks';
 import { ShoppingBag, FileText, Package, User, Calendar, ChevronRight, TrendingUp, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { OrderStatus } from '@/lib/store/slices/ordersSlice';
 import { getUserOrders, Order as APIOrder } from '@/lib/api/services/orderService';
 import { getUserProfile, User as APIUser } from '@/lib/api/services/authService';
 
@@ -90,7 +89,7 @@ export default function DashboardPage(): React.JSX.Element {
     });
   };
 
-  const getStatusColor = (status: OrderStatus): string => {
+  const getStatusColor = (status: string): string => {
     switch (status) {
       case 'pending':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';

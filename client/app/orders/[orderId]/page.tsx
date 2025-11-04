@@ -22,13 +22,47 @@ import {
   PackageCheck,
   ArrowLeft
 } from 'lucide-react';
-import { Order, OrderStatus } from '@/lib/store/slices/ordersSlice';
+import { Order as APIOrder } from '@/lib/api/services/orderService';
 
 interface StatusStep {
-  status: OrderStatus;
+  status: string;
   label: string;
   icon: React.ReactNode;
   description: string;
+}
+
+interface OrderItemView {
+  id: string;
+  name: string;
+  image: string;
+  price: number;
+  quantity: number;
+  packSize: string;
+}
+
+interface ShippingAddressView {
+  fullName: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  phone: string;
+}
+
+interface OrderView {
+  id: string;
+  orderNumber: string;
+  createdAt: string;
+  estimatedDelivery: string;
+  status: string;
+  trackingNumber?: string | null;
+  paymentMethod: string;
+  subtotal: number;
+  shipping: number;
+  tax: number;
+  total: number;
+  items: OrderItemView[];
+  shippingAddress: ShippingAddressView;
 }
 
 export default function OrderTrackingPage(): React.JSX.Element {
@@ -36,12 +70,41 @@ export default function OrderTrackingPage(): React.JSX.Element {
   const params = useParams();
   const orderId = params.orderId as string;
   const { orders } = useAppSelector((state) => state.orders);
-  const [order, setOrder] = useState<Order | null>(null);
+  const [order, setOrder] = useState<OrderView | null>(null);
 
   useEffect(() => {
-    const foundOrder = orders.find((o) => o.id === orderId);
-    if (foundOrder) {
-      setOrder(foundOrder);
+    const found = orders.find((o: APIOrder) => o._id === orderId);
+    if (found) {
+      const view: OrderView = {
+        id: found._id,
+        orderNumber: found._id.slice(-8).toUpperCase(),
+        createdAt: found.createdAt,
+        estimatedDelivery: new Date(new Date(found.createdAt).getTime() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+        status: found.isDelivered ? 'delivered' : 'pending',
+        trackingNumber: undefined,
+        paymentMethod: found.paymentMethod || 'N/A',
+        subtotal: found.itemsPrice,
+        shipping: found.shippingPrice,
+        tax: found.taxPrice,
+        total: found.totalPrice,
+        items: found.orderItems.map((it) => ({
+          id: it.product,
+          name: it.name,
+          image: it.image,
+          price: it.price,
+          quantity: it.quantity,
+          packSize: it.packSize,
+        })),
+        shippingAddress: {
+          fullName: found.user.name,
+          address: found.shippingAddress.address,
+          city: found.shippingAddress.city,
+          state: found.shippingAddress.state,
+          zip: found.shippingAddress.zipCode,
+          phone: '',
+        },
+      };
+      setOrder(view);
     }
   }, [orderId, orders]);
 
@@ -64,7 +127,7 @@ export default function OrderTrackingPage(): React.JSX.Element {
     });
   };
 
-  const getStatusColor = (status: OrderStatus): string => {
+  const getStatusColor = (status: string): string => {
     switch (status) {
       case 'pending':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
@@ -108,7 +171,7 @@ export default function OrderTrackingPage(): React.JSX.Element {
     },
   ];
 
-  const getStatusIndex = (status: OrderStatus): number => {
+  const getStatusIndex = (status: string): number => {
     return statusSteps.findIndex((step) => step.status === status);
   };
 

@@ -116,10 +116,16 @@ export default function AdminDashboard() {
         getAllOrders({ limit: 5 }), // Get recent orders
       ]);
 
-      // Calculate low stock products
-      const lowStock = productData.products.filter(
-        (product: any) => product.countInStock <= (product.minStock || 10)
-      );
+      // Calculate low stock products (map API Product -> LowStockProduct)
+      const lowStock: LowStockProduct[] = productData.products
+        .filter((product) => product.stockQuantity <= 10)
+        .map((product) => ({
+          _id: product._id,
+          name: product.name,
+          countInStock: product.stockQuantity,
+          minStock: 10,
+          category: product.category,
+        }));
 
       setStats({
         totalRevenue: orderStats.totalRevenue,

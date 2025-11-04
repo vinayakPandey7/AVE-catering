@@ -28,7 +28,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { getAllUsers, updateUser, deleteUser, getUserStats, User } from '@/lib/api/services/authService';
+import { getAllUsers, updateUser, deleteUser, getUserStats, User, UserStats } from '@/lib/api/services/authService';
 
 // Mock customers data
 const mockCustomers = [
@@ -160,12 +160,12 @@ export default function CustomersPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCustomers, setTotalCustomers] = useState(0);
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<UserStats>({
     totalUsers: 0,
     adminUsers: 0,
     regularUsers: 0,
     recentUsers: 0,
-    roleBreakdown: []
+    roleBreakdown: [],
   });
 
   useEffect(() => {
@@ -188,8 +188,17 @@ export default function CustomersPage() {
       setTotalCustomers(response.pagination.total);
     } catch (error) {
       console.error('Error fetching customers:', error);
-      // Fallback to mock data for development
-      setCustomers(mockCustomers);
+      // Fallback to mock data for development: map to API User shape
+      setCustomers(
+        mockCustomers.map((c) => ({
+          _id: String(c.id),
+          name: c.name,
+          email: c.email,
+          isAdmin: false,
+          businessName: c.business,
+          phone: c.phone,
+        }))
+      );
     } finally {
       setLoading(false);
     }

@@ -17,7 +17,7 @@ export const translations = {
     categories: "Categories",
     about: "About Us",
     contact: "Contact Us",
-    shipping: "Shipping Info",
+    shippingInfo: "Shipping Info",
     returns: "Returns & Refunds",
     faq: "FAQ",
     
@@ -34,42 +34,7 @@ export const translations = {
     deals: "Deals",
     newExciting: "New & Exciting",
     
-    // Product actions
-    addToCart: "Add to Cart",
-    viewDetails: "View Details",
-    inStock: "In Stock",
-    outOfStock: "Out of Stock",
-    price: "Price",
-    quantity: "Quantity",
     
-    // Cart & Checkout
-    cart: "Cart",
-    checkout: "Checkout",
-    total: "Total",
-    subtotal: "Subtotal",
-    shipping: "Shipping",
-    tax: "Tax",
-    grandTotal: "Grand Total",
-    proceedToCheckout: "Proceed to Checkout",
-    continueShopping: "Continue Shopping",
-    
-    // Orders
-    orderNumber: "Order Number",
-    orderStatus: "Order Status",
-    estimatedDelivery: "Estimated Delivery",
-    trackOrder: "Track Order",
-    orderAgain: "Order Again",
-    recentOrders: "Recent Orders",
-    allOrders: "All Orders",
-    
-    // Auth
-    login: "Login",
-    register: "Register",
-    logout: "Logout",
-    email: "Email",
-    password: "Password",
-    fullName: "Full Name",
-    businessName: "Business Name",
     
     // Homepage
     heroTitle: "Wholesale Grocery & Household Products",
@@ -178,10 +143,6 @@ export const translations = {
     login: "Login",
     register: "Register",
     logout: "Logout",
-    email: "Email",
-    password: "Password",
-    fullName: "Full Name",
-    businessName: "Business Name",
     accountType: "Account Type",
     wholesaler: "Wholesaler",
     retailer: "Retailer",
@@ -255,7 +216,7 @@ export const translations = {
     categories: "Categorías",
     about: "Acerca de Nosotros",
     contact: "Contáctanos",
-    shipping: "Información de Envío",
+    shippingInfo: "Información de Envío",
     returns: "Devoluciones y Reembolsos",
     faq: "Preguntas Frecuentes",
     
@@ -272,42 +233,6 @@ export const translations = {
     deals: "Ofertas",
     newExciting: "Nuevo y Emocionante",
     
-    // Product actions
-    addToCart: "Agregar al Carrito",
-    viewDetails: "Ver Detalles",
-    inStock: "En Stock",
-    outOfStock: "Agotado",
-    price: "Precio",
-    quantity: "Cantidad",
-    
-    // Cart & Checkout
-    cart: "Carrito",
-    checkout: "Finalizar Compra",
-    total: "Total",
-    subtotal: "Subtotal",
-    shipping: "Envío",
-    tax: "Impuesto",
-    grandTotal: "Total Final",
-    proceedToCheckout: "Proceder al Pago",
-    continueShopping: "Continuar Comprando",
-    
-    // Orders
-    orderNumber: "Número de Pedido",
-    orderStatus: "Estado del Pedido",
-    estimatedDelivery: "Entrega Estimada",
-    trackOrder: "Rastrear Pedido",
-    orderAgain: "Pedir de Nuevo",
-    recentOrders: "Pedidos Recientes",
-    allOrders: "Todos los Pedidos",
-    
-    // Auth
-    login: "Iniciar Sesión",
-    register: "Registrarse",
-    logout: "Cerrar Sesión",
-    email: "Correo Electrónico",
-    password: "Contraseña",
-    fullName: "Nombre Completo",
-    businessName: "Nombre del Negocio",
     
     // Homepage
     heroTitle: "Productos de Abarrotes y Hogar al Mayoreo",
@@ -416,10 +341,6 @@ export const translations = {
     login: "Iniciar Sesión",
     register: "Registrarse",
     logout: "Cerrar Sesión",
-    email: "Correo Electrónico",
-    password: "Contraseña",
-    fullName: "Nombre Completo",
-    businessName: "Nombre del Negocio",
     accountType: "Tipo de Cuenta",
     wholesaler: "Mayorista",
     retailer: "Minorista",
@@ -493,7 +414,7 @@ export const translations = {
     categories: "카테고리",
     about: "회사 소개",
     contact: "문의하기",
-    shipping: "배송 정보",
+    shippingInfo: "배송 정보",
     returns: "반품 및 환불",
     faq: "자주 묻는 질문",
     
@@ -510,42 +431,6 @@ export const translations = {
     deals: "특가",
     newExciting: "신제품 및 특별",
     
-    // Product actions
-    addToCart: "장바구니에 추가",
-    viewDetails: "자세히 보기",
-    inStock: "재고 있음",
-    outOfStock: "품절",
-    price: "가격",
-    quantity: "수량",
-    
-    // Cart & Checkout
-    cart: "장바구니",
-    checkout: "결제하기",
-    total: "총액",
-    subtotal: "소계",
-    shipping: "배송비",
-    tax: "세금",
-    grandTotal: "최종 총액",
-    proceedToCheckout: "결제 진행",
-    continueShopping: "쇼핑 계속",
-    
-    // Orders
-    orderNumber: "주문 번호",
-    orderStatus: "주문 상태",
-    estimatedDelivery: "예상 배송일",
-    trackOrder: "주문 추적",
-    orderAgain: "다시 주문",
-    recentOrders: "최근 주문",
-    allOrders: "모든 주문",
-    
-    // Auth
-    login: "로그인",
-    register: "회원가입",
-    logout: "로그아웃",
-    email: "이메일",
-    password: "비밀번호",
-    fullName: "전체 이름",
-    businessName: "사업체명",
     
     // Homepage
     heroTitle: "도매 식료품 및 가정용품",
@@ -654,10 +539,6 @@ export const translations = {
     login: "로그인",
     register: "회원가입",
     logout: "로그아웃",
-    email: "이메일",
-    password: "비밀번호",
-    fullName: "전체 이름",
-    businessName: "사업체명",
     accountType: "계정 유형",
     wholesaler: "도매업자",
     retailer: "소매업자",
@@ -731,7 +612,7 @@ export const translations = {
     categories: "الفئات",
     about: "من نحن",
     contact: "اتصل بنا",
-    shipping: "معلومات الشحن",
+    shippingInfo: "معلومات الشحن",
     returns: "الإرجاع والاسترداد",
     faq: "الأسئلة الشائعة",
     
@@ -748,42 +629,7 @@ export const translations = {
     deals: "العروض",
     newExciting: "جديد ومثير",
     
-    // Product actions
-    addToCart: "أضف إلى السلة",
-    viewDetails: "عرض التفاصيل",
-    inStock: "متوفر",
-    outOfStock: "نفد المخزون",
-    price: "السعر",
-    quantity: "الكمية",
     
-    // Cart & Checkout
-    cart: "السلة",
-    checkout: "الدفع",
-    total: "المجموع",
-    subtotal: "المجموع الفرعي",
-    shipping: "الشحن",
-    tax: "الضريبة",
-    grandTotal: "المجموع الكلي",
-    proceedToCheckout: "المتابعة للدفع",
-    continueShopping: "متابعة التسوق",
-    
-    // Orders
-    orderNumber: "رقم الطلب",
-    orderStatus: "حالة الطلب",
-    estimatedDelivery: "التسليم المتوقع",
-    trackOrder: "تتبع الطلب",
-    orderAgain: "اطلب مرة أخرى",
-    recentOrders: "الطلبات الأخيرة",
-    allOrders: "جميع الطلبات",
-    
-    // Auth
-    login: "تسجيل الدخول",
-    register: "التسجيل",
-    logout: "تسجيل الخروج",
-    email: "البريد الإلكتروني",
-    password: "كلمة المرور",
-    fullName: "الاسم الكامل",
-    businessName: "اسم العمل",
     
     // Homepage
     heroTitle: "منتجات البقالة والمنزل بالجملة",
@@ -892,10 +738,6 @@ export const translations = {
     login: "تسجيل الدخول",
     register: "التسجيل",
     logout: "تسجيل الخروج",
-    email: "البريد الإلكتروني",
-    password: "كلمة المرور",
-    fullName: "الاسم الكامل",
-    businessName: "اسم العمل",
     accountType: "نوع الحساب",
     wholesaler: "تاجر جملة",
     retailer: "تاجر تجزئة",

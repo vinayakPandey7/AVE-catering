@@ -1,6 +1,4 @@
-import { Product } from '@/lib/store/slices/productsSlice';
-
-export const mockProducts: Product[] = [
+export const mockProducts = [
   // Beverages
   {
     id: '1',

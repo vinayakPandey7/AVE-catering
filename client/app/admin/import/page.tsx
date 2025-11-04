@@ -424,7 +424,7 @@ export default function ImportPage() {
               <div className="p-4 bg-red-50 rounded-lg">
                 <h4 className="font-medium text-red-800 mb-2">Errors:</h4>
                 <ul className="text-sm text-red-700 space-y-1">
-                  {importResult.errorDetails.map((error, index) => (
+                  {importResult.errorDetails.map((error: string, index: number) => (
                     <li key={index}>• {error}</li>
                   ))}
                 </ul>

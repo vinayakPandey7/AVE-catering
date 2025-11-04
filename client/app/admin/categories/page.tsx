@@ -21,7 +21,7 @@ import {
   EyeOff
 } from 'lucide-react';
 import { getCategoriesForAdmin, createCategory, updateCategory, deleteCategory, uploadImage, Category } from '@/lib/api/services/categoryService';
-import { createSubcategory, updateSubcategory, deleteSubcategory, uploadImage as uploadSubcategoryImage, Subcategory } from '@/lib/api/services/subcategoryService';
+import { createSubcategory, updateSubcategory, deleteSubcategory, uploadImage as uploadSubcategoryImage } from '@/lib/api/services/subcategoryService';
 import { createSubSubcategory, updateSubSubcategory, deleteSubSubcategory, SubSubcategory } from '@/lib/api/services/subSubcategoryService';
 
 // Remove duplicate interface since we're importing it
@@ -35,7 +35,7 @@ interface CategoryFormData {
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+  const [subcategories, setSubcategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -43,7 +43,7 @@ export default function CategoriesPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [editingSubcategory, setEditingSubcategory] = useState<Subcategory | null>(null);
+  const [editingSubcategory, setEditingSubcategory] = useState<Category | null>(null);
   const [formData, setFormData] = useState<CategoryFormData>({
     name: '',
     description: '',

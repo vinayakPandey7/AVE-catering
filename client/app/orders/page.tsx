@@ -18,7 +18,6 @@ import {
   Filter,
   Loader2
 } from 'lucide-react';
-import { Order, OrderStatus } from '@/lib/store/slices/ordersSlice';
 import { Input } from '@/components/ui/input';
 import { getUserOrders, Order as APIOrder } from '@/lib/api/services/orderService';
 
@@ -28,7 +27,7 @@ export default function OrdersPage(): React.JSX.Element {
   const [orders, setOrders] = useState<APIOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all'>('all');
+  const [statusFilter, setStatusFilter] = useState<string | 'all'>('all');
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -57,7 +56,7 @@ export default function OrdersPage(): React.JSX.Element {
     });
   };
 
-  const getStatusColor = (status: OrderStatus): string => {
+  const getStatusColor = (status: string): string => {
     switch (status) {
       case 'pending':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
@@ -253,7 +252,7 @@ export default function OrdersPage(): React.JSX.Element {
           ) : (
             <div className="space-y-4">
               {filteredOrders.map((order) => (
-                <Card key={order.id} className="hover:shadow-md transition-shadow">
+                <Card key={order._id} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-0">
                     <div className="p-6">
                       {/* Order Header */}

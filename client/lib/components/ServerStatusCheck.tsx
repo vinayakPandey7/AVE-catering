@@ -19,7 +19,7 @@ export function ServerStatusCheck() {
           setStatus('offline');
           setError('Server responded with error');
         }
-      } catch (err) {
+      } catch {
         setStatus('offline');
         setError('Cannot connect to server. Make sure the server is running on port 5001.');
       }

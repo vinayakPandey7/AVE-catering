@@ -22,8 +22,29 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
+// Local type for order state
+interface OrderState {
+  id: string;
+  orderNumber: string;
+  customer: { name: string; email: string; phone: string; business: string };
+  shippingAddress: { fullName: string; address: string; city: string; state: string; zip: string };
+  items: Array<{ id: number; name: string; sku: string; quantity: number; price: number; total: number }>;
+  subtotal: number;
+  shipping: number;
+  tax: number;
+  total: number;
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  paymentStatus: 'paid' | 'unpaid';
+  paymentMethod: string;
+  shippingMethod: string;
+  orderDate: string;
+  estimatedDelivery: string;
+  trackingNumber: string | null;
+  notes: string;
+}
+
 // Mock order data
-const mockOrder = {
+const mockOrder: OrderState = {
   id: 'ORD-001',
   orderNumber: 'AVE12345678',
   customer: {
@@ -116,7 +137,7 @@ const getStatusColor = (status: string) => {
 export default function OrderDetailsPage() {
   const router = useRouter();
   const params = useParams();
-  const [order, setOrder] = useState(mockOrder);
+  const [order, setOrder] = useState<OrderState>(mockOrder);
 
   const handleProcessOrder = () => {
     if (confirm('Process this order?')) {

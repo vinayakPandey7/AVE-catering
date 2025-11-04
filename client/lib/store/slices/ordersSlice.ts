@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import { createOrder, getOrderById, getAllOrders, CreateOrderRequest, Order as ApiOrder } from '../../api/services/orderService';
+import { createOrder, getOrderById, getAllOrders, CreateOrderRequest } from '../../api/services/orderService';
 
 export interface OrderItem {
   _id?: string;
@@ -149,7 +149,7 @@ const ordersSlice = createSlice({
       })
       .addCase(fetchAllOrdersAsync.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.orders = action.payload;
+        state.orders = action.payload.orders;
         state.error = null;
       })
       .addCase(fetchAllOrdersAsync.rejected, (state, action) => {

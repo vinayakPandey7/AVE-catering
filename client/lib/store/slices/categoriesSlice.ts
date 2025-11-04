@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import { getCategories, getCategoryTree, getCategoryBySlug, Category as ApiCategory } from '../../api/services/categoryService';
+import { getCategories, getCategoryTree, getCategoryBySlug } from '../../api/services/categoryService';
 
 export interface Category {
   _id: string;

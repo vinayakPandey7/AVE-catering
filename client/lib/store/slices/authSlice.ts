@@ -1,5 +1,5 @@
-import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import { loginUser, registerUser, getUserProfile, setAuthToken, User as ApiUser } from '../../api/services/authService';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { loginUser, registerUser, getUserProfile, setAuthToken } from '../../api/services/authService';
 
 export interface User {
   _id: string;

@@ -43,11 +43,12 @@ export default function RecentProductsPage(): React.JSX.Element {
     .flatMap(order => order.orderItems)
     .reduce((unique: Product[], item) => {
       // Check if product already exists in unique array
-      const exists = unique.find(p => p.id === item.product);
+      const exists = unique.find(p => p._id === item.product);
       if (!exists) {
         unique.push({
-          id: item.product,
+          _id: item.product,
           name: item.name,
+          sku: '',
           category: 'Recent', // We don't have category in order items
           price: item.price,
           pricePerCase: item.price * 12, // Estimate case price
@@ -55,10 +56,13 @@ export default function RecentProductsPage(): React.JSX.Element {
           packSize: item.packSize,
           image: item.image,
           description: `Recently purchased ${item.name}`,
+          brand: 'Recent',
+          stockQuantity: 0,
           inStock: true,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
           isFeatured: false,
           isOnOffer: false,
-          brand: 'Recent',
         });
       }
       return unique;

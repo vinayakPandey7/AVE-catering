@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import { getProducts, getProductById, ProductFilters, ProductsResponse } from '../../api/services/productService';
+import { getProducts, getProductById, ProductFilters } from '../../api/services/productService';
 
 export interface Product {
   _id: string;
