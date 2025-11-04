@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://ave-catering.onrender.com/api",
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "https://ave-catering.onrender.com/api",
   headers: {
     "Content-Type": "application/json",
   },
@@ -28,14 +28,33 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Handle network errors
+    if (!error.response) {
+      console.error('Network error:', error.message);
+      return Promise.reject(new Error('Network error. Please check your connection.'));
+    }
+
+    // Handle 401 Unauthorized
     if (error.response?.status === 401) {
       // Only handle auth errors in the browser
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token');
-        window.location.href = '/login';
+        // Don't redirect if we're already on login page
+        if (window.location.pathname !== '/auth/login') {
+          window.location.href = '/auth/login';
+        }
       }
     }
-    return Promise.reject(error);
+
+    // Handle 404 Not Found
+    if (error.response?.status === 404) {
+      console.error('API endpoint not found:', error.config?.url);
+      return Promise.reject(new Error('Resource not found. Please try again.'));
+    }
+
+    // Handle other errors
+    const errorMessage = error.response?.data?.message || error.message || 'An error occurred';
+    return Promise.reject(new Error(errorMessage));
   }
 );
 
