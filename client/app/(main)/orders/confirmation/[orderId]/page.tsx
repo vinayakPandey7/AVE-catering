@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAppSelector } from '@/lib/store/hooks';
@@ -96,14 +94,10 @@ export default function OrderConfirmationPage(): React.JSX.Element {
 
   if (!order) {
     return (
-      <>
-        <Header />
-        <div className="container mx-auto px-4 py-20 text-center">
-          <h1 className="text-3xl font-bold mb-4">Order Not Found</h1>
-          <p className="text-muted-foreground mb-6">Redirecting to orders page...</p>
-        </div>
-        <Footer />
-      </>
+      <div className="container mx-auto px-4 py-20 text-center">
+        <h1 className="text-3xl font-bold mb-4">Order Not Found</h1>
+        <p className="text-muted-foreground mb-6">Redirecting to orders page...</p>
+      </div>
     );
   }
 
@@ -118,7 +112,6 @@ export default function OrderConfirmationPage(): React.JSX.Element {
 
   return (
     <>
-      <Header />
       
       <main className="min-h-screen bg-gray-50 py-8">
         <div className="container mx-auto px-4 max-w-4xl">
@@ -293,8 +286,6 @@ export default function OrderConfirmationPage(): React.JSX.Element {
           </div>
         </div>
       </main>
-
-      <Footer />
     </>
   );
 }

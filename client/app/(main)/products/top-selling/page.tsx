@@ -1,11 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
 import CategoryNav from '@/components/layout/CategoryNav';
 import ProductSection from '@/components/home/ProductSection';
-import { Toaster } from 'sonner';
 import { Product } from '@/lib/store/slices/productsSlice';
 import { getTopSellingProducts } from '@/lib/api/services/productService';
 import { Loader2 } from 'lucide-react';
@@ -34,7 +31,6 @@ export default function TopSellingPage(): React.JSX.Element {
   if (loading) {
     return (
       <>
-        <Header />
         <CategoryNav />
         <main className="container mx-auto px-4 py-8 min-h-screen">
           <div className="text-center py-20">
@@ -44,13 +40,11 @@ export default function TopSellingPage(): React.JSX.Element {
             </div>
           </div>
         </main>
-        <Footer />
       </>
     );
   }
   return (
     <>
-      <Header />
       <CategoryNav />
       
       <main className="container mx-auto px-4 py-8 min-h-screen">
@@ -156,9 +150,6 @@ export default function TopSellingPage(): React.JSX.Element {
           </div>
         </div>
       </main>
-
-      <Footer />
-      <Toaster position="top-right" richColors />
     </>
   );
 }

@@ -4,8 +4,6 @@ import { useMemo, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 import { fetchProductsAsync } from '@/lib/store/slices/productsSlice';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
 import ProductGrid from '@/components/shared/ProductGrid';
 import { Package, Filter, ArrowLeft, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -70,26 +68,21 @@ export default function SubcategoryPage(): React.JSX.Element {
   // Loading state
   if (productsLoading) {
     return (
-      <>
-        <Header />
-        <main className="min-h-screen bg-gray-50 py-8">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-center py-20">
-              <div className="text-center">
-                <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-                <p className="text-muted-foreground">Loading products...</p>
-              </div>
+      <main className="min-h-screen bg-gray-50 py-8">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-center py-20">
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+              <p className="text-muted-foreground">Loading products...</p>
             </div>
           </div>
-        </main>
-        <Footer />
-      </>
+        </div>
+      </main>
     );
   }
 
   return (
     <>
-      <Header />
       
       <main className="min-h-screen bg-gray-50 py-8">
         <div className="container mx-auto px-4">
@@ -175,8 +168,6 @@ export default function SubcategoryPage(): React.JSX.Element {
           )}
         </div>
       </main>
-
-      <Footer />
     </>
   );
 }

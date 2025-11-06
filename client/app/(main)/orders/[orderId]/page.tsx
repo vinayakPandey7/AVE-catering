@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAppSelector } from '@/lib/store/hooks';
@@ -177,20 +175,16 @@ export default function OrderTrackingPage(): React.JSX.Element {
 
   if (!order) {
     return (
-      <>
-        <Header />
-        <div className="container mx-auto px-4 py-20 text-center">
-          <Package className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-          <h1 className="text-3xl font-bold mb-4">Order Not Found</h1>
-          <p className="text-muted-foreground mb-6">
-            We couldn&apos;t find an order with that ID
-          </p>
-          <Link href="/orders">
-            <Button>View All Orders</Button>
-          </Link>
-        </div>
-        <Footer />
-      </>
+      <div className="container mx-auto px-4 py-20 text-center">
+        <Package className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+        <h1 className="text-3xl font-bold mb-4">Order Not Found</h1>
+        <p className="text-muted-foreground mb-6">
+          We couldn&apos;t find an order with that ID
+        </p>
+        <Link href="/orders">
+          <Button>View All Orders</Button>
+        </Link>
+      </div>
     );
   }
 
@@ -199,7 +193,6 @@ export default function OrderTrackingPage(): React.JSX.Element {
 
   return (
     <>
-      <Header />
       
       <main className="min-h-screen bg-gray-50 py-8">
         <div className="container mx-auto px-4 max-w-5xl">
@@ -442,8 +435,6 @@ export default function OrderTrackingPage(): React.JSX.Element {
           </Card>
         </div>
       </main>
-
-      <Footer />
     </>
   );
 }

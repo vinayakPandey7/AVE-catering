@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAppSelector } from '@/lib/store/hooks';
@@ -61,16 +59,12 @@ export default function DashboardPage(): React.JSX.Element {
 
   if (loading) {
     return (
-      <>
-        <Header />
-        <div className="container mx-auto px-4 py-20 text-center">
-          <div className="flex items-center justify-center gap-2">
-            <Loader2 className="h-6 w-6 animate-spin" />
-            <span>Loading dashboard...</span>
-          </div>
+      <div className="container mx-auto px-4 py-20 text-center">
+        <div className="flex items-center justify-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>Loading dashboard...</span>
         </div>
-        <Footer />
-      </>
+      </div>
     );
   }
 
@@ -146,7 +140,6 @@ export default function DashboardPage(): React.JSX.Element {
 
   return (
     <>
-      <Header />
       
       <main className="min-h-screen bg-gray-50 py-8">
         <div className="container mx-auto px-4">
@@ -348,8 +341,6 @@ export default function DashboardPage(): React.JSX.Element {
           </Card>
         </div>
       </main>
-
-      <Footer />
     </>
   );
 }

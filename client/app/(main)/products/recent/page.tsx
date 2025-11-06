@@ -1,11 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
 import CategoryNav from '@/components/layout/CategoryNav';
 import ProductSection from '@/components/home/ProductSection';
-import { Toaster } from 'sonner';
 import { Product } from '@/lib/store/slices/productsSlice';
 import { getUserOrders, Order } from '@/lib/api/services/orderService';
 import { useAppSelector } from '@/lib/store/hooks';
@@ -92,7 +89,6 @@ export default function RecentProductsPage(): React.JSX.Element {
   if (!isAuthenticated) {
     return (
       <>
-        <Header />
         <CategoryNav />
         <main className="container mx-auto px-4 py-8 min-h-screen">
           <div className="text-center py-20">
@@ -105,7 +101,6 @@ export default function RecentProductsPage(): React.JSX.Element {
             </a>
           </div>
         </main>
-        <Footer />
       </>
     );
   }
@@ -113,7 +108,6 @@ export default function RecentProductsPage(): React.JSX.Element {
   if (loading) {
     return (
       <>
-        <Header />
         <CategoryNav />
         <main className="container mx-auto px-4 py-8 min-h-screen">
           <div className="text-center py-20">
@@ -123,13 +117,11 @@ export default function RecentProductsPage(): React.JSX.Element {
             </div>
           </div>
         </main>
-        <Footer />
       </>
     );
   }
   return (
     <>
-      <Header />
       <CategoryNav />
       
       <main className="container mx-auto px-4 py-8 min-h-screen">
@@ -265,9 +257,6 @@ export default function RecentProductsPage(): React.JSX.Element {
           )}
         </div>
       </main>
-
-      <Footer />
-      <Toaster position="top-right" richColors />
     </>
   );
 }
