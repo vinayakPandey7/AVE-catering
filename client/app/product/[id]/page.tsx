@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,7 +10,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useAppDispatch } from '@/lib/store/hooks';
 import { addToCart } from '@/lib/store/slices/cartSlice';
-import { toast, Toaster } from 'sonner';
+import { toast } from 'sonner';
 import { getProductById, Product } from '@/lib/api/services/productService';
 
 export default function ProductDetailPage(): React.JSX.Element {
@@ -63,37 +61,28 @@ export default function ProductDetailPage(): React.JSX.Element {
 
   if (loading) {
     return (
-      <>
-        <Header />
-        <div className="container mx-auto px-4 py-20 text-center">
-          <div className="flex items-center justify-center gap-2">
-            <Loader2 className="h-6 w-6 animate-spin" />
-            <span>Loading product...</span>
-          </div>
+      <div className="container mx-auto px-4 py-20 text-center">
+        <div className="flex items-center justify-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>Loading product...</span>
         </div>
-        <Footer />
-      </>
+      </div>
     );
   }
 
   if (!product) {
     return (
-      <>
-        <Header />
-        <div className="container mx-auto px-4 py-20 text-center">
-          <h1 className="text-3xl font-bold mb-4">Product Not Found</h1>
-          <Link href="/products">
-            <Button>Back to Products</Button>
-          </Link>
-        </div>
-        <Footer />
-      </>
+      <div className="container mx-auto px-4 py-20 text-center">
+        <h1 className="text-3xl font-bold mb-4">Product Not Found</h1>
+        <Link href="/products">
+          <Button>Back to Products</Button>
+        </Link>
+      </div>
     );
   }
 
   return (
     <>
-      <Header />
       
       <main className="min-h-screen bg-gray-50 py-8">
         <div className="container mx-auto px-4">
@@ -254,9 +243,6 @@ export default function ProductDetailPage(): React.JSX.Element {
           )}
         </div>
       </main>
-
-      <Footer />
-      <Toaster position="top-right" richColors />
     </>
   );
 }

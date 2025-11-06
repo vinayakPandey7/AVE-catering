@@ -35,7 +35,6 @@ import {
 } from '@/components/ui/dialog';
 import { getProducts, deleteProduct, updateProduct, Product } from '@/lib/api/services/productService';
 import { toast } from 'sonner';
-import { Toaster } from 'sonner';
 
 const getStatusBadge = (status: string, stock: number) => {
   if (stock === 0) {
@@ -501,8 +500,6 @@ export default function ProductsPage() {
           )}
         </DialogContent>
       </Dialog>
-
-      <Toaster position="top-right" richColors />
     </div>
   );
 }

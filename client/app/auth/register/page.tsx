@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAppDispatch } from '@/lib/store/hooks';
 import { registerAsync } from '@/lib/store/slices/authSlice';
-import { toast, Toaster } from 'sonner';
+import { toast } from 'sonner';
 
 interface FormData {
   name: string;
@@ -211,7 +211,6 @@ export default function RegisterPage(): React.JSX.Element {
           </div>
         </CardContent>
       </Card>
-      <Toaster position="top-right" richColors />
     </div>
   );
 }

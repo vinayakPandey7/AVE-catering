@@ -2,8 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,7 +11,7 @@ import { createOrderAsync } from '@/lib/store/slices/ordersSlice';
 import { CreateOrderRequest } from '@/lib/api/services/orderService';
 import Image from 'next/image';
 import Link from 'next/link';
-import { toast, Toaster } from 'sonner';
+import { toast } from 'sonner';
 import { CreditCard, Truck, ShoppingBag } from 'lucide-react';
 
 interface FormData {
@@ -125,24 +123,19 @@ export default function CheckoutPage(): React.JSX.Element {
 
   if (items.length === 0) {
     return (
-      <>
-        <Header />
-        <div className="container mx-auto px-4 py-20 text-center">
-          <ShoppingBag className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-          <h1 className="text-3xl font-bold mb-4">Your cart is empty</h1>
-          <p className="text-muted-foreground mb-6">Add some products to continue</p>
-          <Link href="/products">
-            <Button>Browse Products</Button>
-          </Link>
-        </div>
-        <Footer />
-      </>
+      <div className="container mx-auto px-4 py-20 text-center">
+        <ShoppingBag className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+        <h1 className="text-3xl font-bold mb-4">Your cart is empty</h1>
+        <p className="text-muted-foreground mb-6">Add some products to continue</p>
+        <Link href="/products">
+          <Button>Browse Products</Button>
+        </Link>
+      </div>
     );
   }
 
   return (
     <>
-      <Header />
       
       <main className="min-h-screen bg-gray-50 py-8">
         <div className="container mx-auto px-4">
@@ -358,9 +351,6 @@ export default function CheckoutPage(): React.JSX.Element {
           </div>
         </div>
       </main>
-
-      <Footer />
-      <Toaster position="top-right" richColors />
     </>
   );
 }

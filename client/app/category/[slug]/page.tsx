@@ -5,8 +5,6 @@ import { useParams } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 import { fetchProductsAsync } from '@/lib/store/slices/productsSlice';
 import { fetchCategoryBySlugAsync } from '@/lib/store/slices/categoriesSlice';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
 import ProductGrid from '@/components/shared/ProductGrid';
 import { Package, Filter, X, ChevronRight, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -175,26 +173,21 @@ export default function CategoryPage(): React.JSX.Element {
   // Loading state
   if (productsLoading || categoryLoading) {
     return (
-      <>
-        <Header />
-        <main className="min-h-screen bg-gray-50 py-8">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-center py-20">
-              <div className="text-center">
-                <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-                <p className="text-muted-foreground">Loading category...</p>
-              </div>
+      <main className="min-h-screen bg-gray-50 py-8">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-center py-20">
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+              <p className="text-muted-foreground">Loading category...</p>
             </div>
           </div>
-        </main>
-        <Footer />
-      </>
+        </div>
+      </main>
     );
   }
 
   return (
     <>
-      <Header />
       
       <main className="min-h-screen bg-gray-50 py-4">
         <div className="container mx-auto px-4 max-w-7xl">
@@ -426,8 +419,6 @@ export default function CategoryPage(): React.JSX.Element {
           </div>
         </div>
       </main>
-
-      <Footer />
     </>
   );
 }

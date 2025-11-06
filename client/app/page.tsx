@@ -4,11 +4,7 @@ import { lazy, Suspense, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 import { fetchProductsAsync } from '@/lib/store/slices/productsSlice';
 import { fetchCategoriesAsync } from '@/lib/store/slices/categoriesSlice';
-import { loadUserAsync } from '@/lib/store/slices/authSlice';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
 import CategoryNav from '@/components/layout/CategoryNav';
-import { Toaster } from 'sonner';
 
 const ProductSection = lazy(() => import('@/components/home/ProductSection'));
 const CategoryBanner = lazy(() => import('@/components/home/CategoryBanner'));
@@ -19,11 +15,6 @@ export default function HomePage(): React.JSX.Element {
   const dispatch = useAppDispatch();
   const { items: products, isLoading: productsLoading } = useAppSelector((state) => state.products);
   const { categories, isLoading: categoriesLoading } = useAppSelector((state) => state.categories);
-
-  // Load user authentication on app start
-  useEffect(() => {
-    dispatch(loadUserAsync());
-  }, [dispatch]);
 
   // Load products and categories on component mount
   useEffect(() => {
@@ -42,7 +33,6 @@ export default function HomePage(): React.JSX.Element {
 
   return (
             <>
-              <Header />
               <CategoryNav />
               
               <main className="min-h-screen">
@@ -95,9 +85,6 @@ export default function HomePage(): React.JSX.Element {
           />
         </Suspense>
       </main>
-
-      <Footer />
-      <Toaster position="top-right" richColors />
     </>
   );
 }

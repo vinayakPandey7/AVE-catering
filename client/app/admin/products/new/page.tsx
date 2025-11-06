@@ -6,8 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Save, X, Upload, ImageIcon } from 'lucide-react';
+import { ArrowLeft, Save, X, Upload, ImageIcon, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { createProduct } from '@/lib/api/services/productService';
+import { toast } from 'sonner';
 
 export default function NewProductPage() {
   const router = useRouter();
@@ -28,6 +30,7 @@ export default function NewProductPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const categories = [
     'Beverages',
@@ -111,37 +114,47 @@ export default function NewProductPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validate()) {
+      toast.error('Please fill in all required fields correctly');
       return;
     }
 
-    // Here you would normally send data to your API with FormData for image upload
-    const submitData = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
-      submitData.append(key, value);
-    });
-    
-    if (imageFile) {
-      submitData.append('image', imageFile);
-    }
+    setIsSubmitting(true);
 
-    console.log('Product Data:', formData);
-    console.log('Image File:', imageFile);
-    
-    // In a real application:
-    // const response = await fetch('/api/admin/products', {
-    //   method: 'POST',
-    //   body: submitData
-    // });
-    
-    // Show success message (you can use a toast notification library)
-    alert('Product added successfully!');
-    
-    // Redirect back to products page
-    router.push('/admin/products');
+    try {
+      // Prepare product data
+      const productData = {
+        name: formData.name,
+        sku: formData.sku,
+        category: formData.category,
+        brand: formData.brand,
+        price: parseFloat(formData.price),
+        pricePerCase: parseFloat(formData.pricePerCase),
+        packSize: formData.packSize,
+        unit: formData.unit,
+        description: formData.description,
+        stockQuantity: parseInt(formData.stock),
+        minStock: parseInt(formData.minStock),
+      };
+
+      // Call the API to create the product
+      const createdProduct = await createProduct(productData, imageFile || undefined);
+
+      toast.success('Product added successfully!');
+      console.log('Created Product:', createdProduct);
+      
+      // Redirect back to products page
+      router.push('/admin/products');
+    } catch (error: any) {
+      console.error('Error creating product:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to create product';
+      toast.error(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCancel = () => {
@@ -504,13 +517,27 @@ export default function NewProductPage() {
                   variant="outline"
                   onClick={handleCancel}
                   className="gap-2"
+                  disabled={isSubmitting}
                 >
                   <X className="h-4 w-4" />
                   Cancel
                 </Button>
-                <Button type="submit" className="gap-2 bg-[#006e9d] hover:bg-[#005580] text-white shadow-md">
-                  <Save className="h-4 w-4" />
-                  Add Product
+                <Button 
+                  type="submit" 
+                  className="gap-2 bg-[#006e9d] hover:bg-[#005580] text-white shadow-md"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4" />
+                      Add Product
+                    </>
+                  )}
                 </Button>
               </div>
             </CardContent>

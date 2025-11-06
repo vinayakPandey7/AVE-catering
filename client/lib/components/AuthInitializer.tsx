@@ -5,7 +5,7 @@ import { useAppDispatch } from '@/lib/store/hooks';
 import { loadUserAsync } from '@/lib/store/slices/authSlice';
 import { setAuthToken } from '@/lib/api/services/authService';
 
-export function AuthInitializer({ children }: { children: React.ReactNode }) {
+export default function AuthInitializer() {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -19,5 +19,5 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
     }
   }, [dispatch]);
 
-  return <>{children}</>;
+  return null;
 }

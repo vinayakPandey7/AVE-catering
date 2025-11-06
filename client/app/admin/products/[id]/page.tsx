@@ -10,7 +10,6 @@ import { ArrowLeft, Save, X, Trash2, Upload, ImageIcon, Loader2 } from 'lucide-r
 import Link from 'next/link';
 import { getProductById, updateProduct, deleteProduct, Product } from '@/lib/api/services/productService';
 import { toast } from 'sonner';
-import { Toaster } from 'sonner';
 
 export default function EditProductPage() {
   const router = useRouter();
@@ -619,7 +618,6 @@ export default function EditProductPage() {
           </Card>
         </div>
       </form>
-      <Toaster position="top-right" richColors />
     </div>
   );
 }

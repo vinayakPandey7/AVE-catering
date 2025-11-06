@@ -4,14 +4,11 @@ import { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 import { fetchProductsAsync, setFilters } from '@/lib/store/slices/productsSlice';
 import { fetchCategoriesAsync } from '@/lib/store/slices/categoriesSlice';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
 import CategoryNav from '@/components/layout/CategoryNav';
 import ProductGrid from '@/components/shared/ProductGrid';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, SlidersHorizontal, Loader2 } from 'lucide-react';
-import { Toaster } from 'sonner';
 
 export default function ProductsPage(): React.JSX.Element {
   const dispatch = useAppDispatch();
@@ -63,7 +60,6 @@ export default function ProductsPage(): React.JSX.Element {
 
   return (
     <>
-      <Header />
       <CategoryNav />
       
       <main className="min-h-screen bg-gray-50 py-8">
@@ -182,9 +178,6 @@ export default function ProductsPage(): React.JSX.Element {
           )}
         </div>
       </main>
-
-      <Footer />
-      <Toaster position="top-right" richColors />
     </>
   );
 }

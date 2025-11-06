@@ -2,8 +2,6 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAppSelector } from '@/lib/store/hooks';
@@ -111,41 +109,32 @@ export default function OrdersPage(): React.JSX.Element {
 
   if (!isAuthenticated) {
     return (
-      <>
-        <Header />
-        <div className="container mx-auto px-4 py-20 text-center">
-          <Package className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-          <h1 className="text-3xl font-bold mb-4">Please Login</h1>
-          <p className="text-muted-foreground mb-6">
-            You need to be logged in to view your orders
-          </p>
-          <Link href="/auth/login">
-            <Button>Login</Button>
-          </Link>
-        </div>
-        <Footer />
-      </>
+      <div className="container mx-auto px-4 py-20 text-center">
+        <Package className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+        <h1 className="text-3xl font-bold mb-4">Please Login</h1>
+        <p className="text-muted-foreground mb-6">
+          You need to be logged in to view your orders
+        </p>
+        <Link href="/auth/login">
+          <Button>Login</Button>
+        </Link>
+      </div>
     );
   }
 
   if (loading) {
     return (
-      <>
-        <Header />
-        <div className="container mx-auto px-4 py-20 text-center">
-          <div className="flex items-center justify-center gap-2">
-            <Loader2 className="h-6 w-6 animate-spin" />
-            <span>Loading orders...</span>
-          </div>
+      <div className="container mx-auto px-4 py-20 text-center">
+        <div className="flex items-center justify-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>Loading orders...</span>
         </div>
-        <Footer />
-      </>
+      </div>
     );
   }
 
   return (
     <>
-      <Header />
       
       <main className="min-h-screen bg-gray-50 py-8">
         <div className="container mx-auto px-4">
@@ -328,8 +317,6 @@ export default function OrdersPage(): React.JSX.Element {
           )}
         </div>
       </main>
-
-      <Footer />
     </>
   );
 }
