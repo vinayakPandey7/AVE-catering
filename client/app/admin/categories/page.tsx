@@ -54,117 +54,6 @@ export default function CategoriesPage() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
 
-  // Mock data for demonstration
-  const mockCategories: Category[] = [
-    {
-      _id: '1',
-      name: 'Beverages',
-      slug: 'beverages',
-      description: 'All types of beverages',
-      isActive: true,
-      displayOrder: 1,
-      productCount: 25,
-      level: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      subcategories: [
-        {
-          _id: '2',
-          name: 'Soft Drinks',
-          slug: 'soft-drinks',
-          description: 'Carbonated soft drinks',
-          isActive: true,
-          displayOrder: 1,
-          productCount: 15,
-          level: 1,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          subcategories: [
-            {
-              _id: '3',
-              name: 'Cola',
-              slug: 'cola',
-              description: 'Cola flavored drinks',
-              isActive: true,
-              displayOrder: 1,
-              productCount: 8,
-              level: 2,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              subcategories: []
-            },
-            {
-              _id: '4',
-              name: 'Lemon-Lime',
-              slug: 'lemon-lime',
-              description: 'Lemon and lime flavored drinks',
-              isActive: true,
-              displayOrder: 2,
-              productCount: 7,
-              level: 2,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              subcategories: []
-            }
-          ]
-        },
-        {
-          _id: '5',
-          name: 'Juices',
-          slug: 'juices',
-          description: 'Fruit and vegetable juices',
-          isActive: true,
-          displayOrder: 2,
-          productCount: 10,
-          level: 1,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          subcategories: []
-        }
-      ]
-    },
-    {
-      _id: '6',
-      name: 'Snacks',
-      slug: 'snacks',
-      description: 'All types of snacks',
-      isActive: true,
-      displayOrder: 2,
-      productCount: 18,
-      level: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      subcategories: [
-        {
-          _id: '7',
-          name: 'Chips',
-          slug: 'chips',
-          description: 'Potato and corn chips',
-          isActive: true,
-          displayOrder: 1,
-          productCount: 12,
-          level: 1,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          subcategories: []
-        },
-        {
-          _id: '8',
-          name: 'Nuts',
-          slug: 'nuts',
-          description: 'Various types of nuts',
-          isActive: true,
-          displayOrder: 2,
-          productCount: 6,
-          level: 1,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          subcategories: []
-        }
-      ]
-    }
-  ];
-
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -176,8 +65,7 @@ export default function CategoriesPage() {
         setSubcategories(allSubcategories);
       } catch (error) {
         console.error('Error fetching categories:', error);
-        // Fallback to mock data for development
-        setCategories(mockCategories);
+        setCategories([]);
         setSubcategories([]);
       } finally {
         setLoading(false);

@@ -30,94 +30,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { getAllUsers, updateUser, deleteUser, getUserStats, User, UserStats } from '@/lib/api/services/authService';
 
-// Mock customers data
-const mockCustomers = [
-  {
-    id: 1,
-    name: 'John Doe',
-    email: 'john@example.com',
-    phone: '(323) 250-3212',
-    business: 'John\'s Convenience Store',
-    accountType: 'wholesaler',
-    status: 'approved',
-    totalOrders: 45,
-    totalSpent: 12450.50,
-    averageOrder: 276.68,
-    lastOrder: '2024-01-15',
-    joinDate: '2023-06-15',
-  },
-  {
-    id: 2,
-    name: 'Jane Smith',
-    email: 'jane@example.com',
-    phone: '(323) 250-3213',
-    business: 'Smith\'s Market',
-    accountType: 'retailer',
-    status: 'approved',
-    totalOrders: 32,
-    totalSpent: 8920.30,
-    averageOrder: 278.76,
-    lastOrder: '2024-01-14',
-    joinDate: '2023-07-20',
-  },
-  {
-    id: 3,
-    name: 'Bob Johnson',
-    email: 'bob@example.com',
-    phone: '(323) 250-3214',
-    business: 'Bob\'s Grocery',
-    accountType: 'wholesaler',
-    status: 'approved',
-    totalOrders: 78,
-    totalSpent: 28540.80,
-    averageOrder: 366.16,
-    lastOrder: '2024-01-13',
-    joinDate: '2023-03-10',
-  },
-  {
-    id: 4,
-    name: 'Alice Brown',
-    email: 'alice@example.com',
-    phone: '(323) 250-3215',
-    business: 'Alice\'s Shop',
-    accountType: 'retailer',
-    status: 'pending',
-    totalOrders: 0,
-    totalSpent: 0,
-    averageOrder: 0,
-    lastOrder: null,
-    joinDate: '2024-01-15',
-  },
-  {
-    id: 5,
-    name: 'Charlie Wilson',
-    email: 'charlie@example.com',
-    phone: '(323) 250-3216',
-    business: 'Charlie\'s Store',
-    accountType: 'wholesaler',
-    status: 'suspended',
-    totalOrders: 15,
-    totalSpent: 4230.60,
-    averageOrder: 282.04,
-    lastOrder: '2023-12-20',
-    joinDate: '2023-09-05',
-  },
-  {
-    id: 6,
-    name: 'David Lee',
-    email: 'david@example.com',
-    phone: '(323) 250-3217',
-    business: 'Lee\'s Mart',
-    accountType: 'wholesaler',
-    status: 'approved',
-    totalOrders: 56,
-    totalSpent: 19870.40,
-    averageOrder: 354.83,
-    lastOrder: '2024-01-12',
-    joinDate: '2023-05-18',
-  },
-];
-
 const getStatusColor = (status: string) => {
   switch (status) {
     case 'approved':
@@ -188,17 +100,7 @@ export default function CustomersPage() {
       setTotalCustomers(response.pagination.total);
     } catch (error) {
       console.error('Error fetching customers:', error);
-      // Fallback to mock data for development: map to API User shape
-      setCustomers(
-        mockCustomers.map((c) => ({
-          _id: String(c.id),
-          name: c.name,
-          email: c.email,
-          isAdmin: false,
-          businessName: c.business,
-          phone: c.phone,
-        }))
-      );
+      setCustomers([]);
     } finally {
       setLoading(false);
     }
