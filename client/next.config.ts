@@ -82,7 +82,8 @@ const nextConfig: NextConfig = {
   },
 
   // Output configuration for production
-  output: 'standalone',
+  // Note: 'standalone' is for Docker. For Vercel, comment it out or remove it
+  // output: 'standalone',
   
   // Webpack optimizations
   webpack: (config, { dev, isServer }) => {
