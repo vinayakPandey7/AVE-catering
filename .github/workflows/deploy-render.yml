@@ -1,0 +1,49 @@
+name: Deploy to Render
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server/**'
+      - '.github/workflows/deploy-render.yml'
+
+jobs:
+  deploy:
+    name: Deploy Server to Render
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Trigger Render Deployment
+        run: |
+          echo "Triggering Render deployment..."
+          if [ -n "${{ secrets.RENDER_DEPLOY_HOOK }}" ]; then
+            curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
+            echo "✅ Render deployment triggered successfully!"
+          else
+            echo "⚠️  RENDER_DEPLOY_HOOK secret not set"
+            echo "Please add it in GitHub Settings > Secrets > Actions"
+            echo "Get your deploy hook from: https://dashboard.render.com/"
+          fi
+
+      - name: Wait for deployment
+        run: |
+          echo "Waiting for deployment to complete..."
+          sleep 30
+          echo "Checking server health..."
+          
+      - name: Verify deployment
+        run: |
+          echo "Testing banner API endpoint..."
+          for i in {1..10}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://ave-catering.onrender.com/api/banners/public || echo "000")
+            if [ "$STATUS" = "200" ] || [ "$STATUS" = "401" ]; then
+              echo "✅ Server is responding!"
+              exit 0
+            fi
+            echo "Attempt $i: Status $STATUS - Waiting..."
+            sleep 30
+          done
+          echo "⚠️  Server might still be deploying. Check Render dashboard."
+
