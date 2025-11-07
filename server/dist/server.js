@@ -1,9 +1,5 @@
 import express from "express";
 import cors from "cors";
-import helmet from "helmet";
-import compression from "compression";
-import rateLimit from "express-rate-limit";
-import morgan from "morgan";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import { errorHandler, notFound } from "./middleware/errorMiddleware.js";
@@ -20,12 +16,9 @@ import settingsRoutes from "./routes/settingsRoutes.js";
 import importRoutes from "./routes/importRoutes.js";
 import bannerRoutes from "./routes/bannerRoutes.js";
 import logger from "./utils/logger.js";
-
 // Load environment variables
 dotenv.config();
-
 const app = express();
-
 // Security middleware
 // app.use(
 //   helmet({
@@ -40,7 +33,6 @@ const app = express();
 //     crossOriginEmbedderPolicy: false,
 //   })
 // );
-
 // Rate limiting
 // const limiter = rateLimit({
 //   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -50,27 +42,21 @@ const app = express();
 //   legacyHeaders: false,
 // });
 // app.use(limiter);
-
 // CORS configuration
-app.use(
-  cors({
+app.use(cors({
     origin: process.env.FRONTEND_URL || "http://localhost:3000",
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
-
+}));
 // Compression
 // app.use(compression());
-
 // Logging
 // app.use(
 //   morgan("combined", {
 //     stream: { write: (message) => logger.info(message.trim()) },
 //   })
 // );
-
 // Body parsing
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
@@ -78,14 +64,13 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 connectDB();
 // Health check endpoint
 app.get("/health", (req, res) => {
-  res.status(200).json({
-    status: "OK",
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: process.env.NODE_ENV || "development",
-  });
+    res.status(200).json({
+        status: "OK",
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        environment: process.env.NODE_ENV || "development",
+    });
 });
-
 // API routes
 app.use("/api/products", productRoutes);
 app.use("/api/users", userRoutes);
@@ -99,40 +84,30 @@ app.use("/api/reports", reportRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/import", importRoutes);
 app.use("/api/banners", bannerRoutes);
-
 // Error handling middleware
 app.use(notFound);
 app.use(errorHandler);
-
 const PORT = parseInt(process.env.PORT || "5001");
-
 // Start server
 const server = app.listen(PORT, "0.0.0.0", () => {
-  logger.info(
-    `🚀 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`
-  );
-  logger.info(`📊 Health check available at http://localhost:${PORT}/health`);
+    logger.info(`🚀 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+    logger.info(`📊 Health check available at http://localhost:${PORT}/health`);
 });
-
 // Graceful shutdown handler
-const gracefulShutdown = (signal: string) => {
-  logger.info(`${signal} received, shutting down gracefully`);
-  server.close(() => {
-    logger.info("Process terminated");
-    process.exit(0);
-  });
+const gracefulShutdown = (signal) => {
+    logger.info(`${signal} received, shutting down gracefully`);
+    server.close(() => {
+        logger.info("Process terminated");
+        process.exit(0);
+    });
 };
-
 process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
 process.on("SIGINT", () => gracefulShutdown("SIGINT"));
-
 export default app;
-
 // import express from "express";
 // import cors from "cors";
 // import dotenv from "dotenv";
 // import connectDB from "./config/db.js";
-
 // import productRoutes from "./routes/productRoutes.js";
 // import userRoutes from "./routes/userRoutes.js";
 // import orderRoutes from "./routes/orderRoutes.js";
@@ -141,18 +116,14 @@ export default app;
 // import subSubcategoryRoutes from "./routes/subSubcategoryRoutes.js";
 // import uploadRoutes from "./routes/uploadRoutes.js";
 // import { errorHandler, notFound } from "./middleware/errorMiddleware.js";
-
 // dotenv.config();
 // const app = express();
-
 // // Middleware
 // app.use(cors());
 // app.use(express.json());
 // app.use(express.urlencoded({ extended: true }));
-
 // // Connect to MongoDB
 // connectDB();
-
 // // Routes
 // app.use("/api/products", productRoutes);
 // app.use("/api/users", userRoutes);
@@ -161,15 +132,12 @@ export default app;
 // app.use("/api/subcategories", subcategoryRoutes);
 // app.use("/api/subsubcategories", subSubcategoryRoutes);
 // app.use("/api/upload", uploadRoutes);
-
 // // Error Handling
 // app.use(notFound);
 // app.use(errorHandler);
-
 // // Start Server
 // const PORT = process.env.PORT || 5000;
 // app.listen(PORT, () => {
 //   console.log(`🚀 Server running on port ${PORT}`);
 // });
-
 // export default app;

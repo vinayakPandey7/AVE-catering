@@ -7,6 +7,7 @@
     "start": "node dist/server.js",
     "dev": "PORT=5000 nodemon --exec \"npx tsx server.ts\"",
     "build": "tsc",
+    "postbuild": "cp package.json dist/",
     "lint": "eslint . --ext .ts",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist",
