@@ -26,18 +26,18 @@ export default function Header(): React.JSX.Element {
       <MobileHeader />
       
       {/* Desktop Header */}
-      <header className="hidden lg:block sticky top-0 z-50 w-full border-b bg-white shadow-lg backdrop-blur-sm">
+      <header className="hidden lg:block sticky top-0 z-50 w-full border-b bg-white/80 shadow-lg backdrop-blur-sm">
         {/* Top Bar */}
         <div className="bg-gradient-to-r from-primary to-primary/90 text-primary-foreground">
-          <div className="container mx-auto px-4 py-2">
+          <div className="container mx-auto px-6 py-2">
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-4">
-                <span className="hidden sm:inline flex items-center gap-1">
+                <span className="hidden sm:flex items-center gap-2">
                   <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
                   {t('freeDelivery')}
                 </span>
               </div>
-              <span className="font-medium hidden md:inline">{t('welcome')}</span>
+              <span className="font-medium hidden md:inline tracking-wide">{t('welcome')}</span>
               <div className="flex items-center gap-2">
                 <Phone className="h-4 w-4" />
                 <span className="font-medium">{t('callText')}</span>
@@ -47,12 +47,12 @@ export default function Header(): React.JSX.Element {
         </div>
 
       {/* Main Header */}
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between gap-4">
+      <div className="container mx-auto px-6 py-4">
+        <div className="flex items-center justify-between gap-6">
           {/* Logo and Categories */}
           <div className="flex items-center gap-4 lg:gap-6">
             <Link href="/" className="flex items-center gap-2 lg:gap-3 group">
-              <div className="flex h-12 w-12 lg:h-12 lg:w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-600 to-teal-700 text-white font-bold text-xl lg:text-xl shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+              <div className="flex h-12 w-12 lg:h-12 lg:w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-600 to-teal-700 text-white font-semibold text-xl lg:text-xl shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
                 A
               </div>
               <span className="hidden text-xl lg:text-2xl font-bold text-primary sm:inline group-hover:text-primary/80 transition-colors">
@@ -72,7 +72,7 @@ export default function Header(): React.JSX.Element {
               <Input
                 type="search"
                 placeholder={t('searchPlaceholder')}
-                className="pl-12 pr-4 h-12 rounded-full border-2 border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
+                className="pl-12 pr-4 h-12 rounded-full border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
               />
             </div>
           </div>
@@ -85,20 +85,20 @@ export default function Header(): React.JSX.Element {
             {/* Action Buttons - Desktop */}
             <div className="hidden lg:flex items-center gap-4">
               <Link href="/orders">
-                <Button variant="outline" size="sm" className="group gap-3 px-4 py-2.5 bg-gradient-to-r from-purple-50 via-purple-100 to-purple-50 border-2 border-purple-200 text-purple-800 hover:from-purple-100 hover:via-purple-200 hover:to-purple-100 hover:border-purple-300 hover:shadow-lg hover:shadow-purple-200/50 hover:-translate-y-0.5 transition-all duration-300 rounded-xl font-medium">
-                  <List className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
+                <Button variant="outline" size="sm" className="group gap-2 px-4 py-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-primary hover:border-primary/30 transition-all rounded-xl font-medium">
+                  <List className="h-4 w-4 group-hover:text-primary transition-colors" />
                   {t('myOrders')}
                 </Button>
               </Link>
               <Link href="/products/top-selling">
-                <Button variant="outline" size="sm" className="group gap-3 px-4 py-2.5 bg-gradient-to-r from-amber-50 via-yellow-100 to-amber-50 border-2 border-amber-200 text-amber-800 hover:from-amber-100 hover:via-yellow-200 hover:to-amber-100 hover:border-amber-300 hover:shadow-lg hover:shadow-amber-200/50 hover:-translate-y-0.5 transition-all duration-300 rounded-xl font-medium">
-                  <Lightbulb className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
+                <Button variant="outline" size="sm" className="group gap-2 px-4 py-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-amber-600 hover:border-amber-300 transition-all rounded-xl font-medium">
+                  <Lightbulb className="h-4 w-4 group-hover:text-amber-600 transition-colors" />
                   {t('topItems')}
                 </Button>
               </Link>
               <Link href="/products/recent">
-                <Button variant="outline" size="sm" className="group gap-3 px-4 py-2.5 bg-gradient-to-r from-rose-50 via-pink-100 to-rose-50 border-2 border-rose-200 text-rose-800 hover:from-rose-100 hover:via-pink-200 hover:to-rose-100 hover:border-rose-300 hover:shadow-lg hover:shadow-rose-200/50 hover:-translate-y-0.5 transition-all duration-300 rounded-xl font-medium">
-                  <RotateCcw className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
+                <Button variant="outline" size="sm" className="group gap-2 px-4 py-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-rose-600 hover:border-rose-300 transition-all rounded-xl font-medium">
+                  <RotateCcw className="h-4 w-4 group-hover:text-rose-600 transition-colors" />
                   {t('buyAgain')}
                 </Button>
               </Link>

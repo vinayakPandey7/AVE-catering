@@ -23,17 +23,17 @@ export default function MobileHeader(): React.JSX.Element {
   const [selectedLanguage, setSelectedLanguage] = useState('en');
 
   return (
-    <header className="lg:hidden sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-gray-100">
+    <header className="lg:hidden sticky top-0 z-50 w-fullbg-gradient-to-r from-white via-gray-50 to-white backdrop-blur-md border-b border-gray-100 shadow-sm">
       {/* Main Mobile Header */}
-      <div className="px-6 py-4">
+      <div className="px-5 py-3">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-white font-semibold text-lg shadow-sm group-hover:shadow-md transition-all duration-200">
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-white font-semibold text-lg shadow-md group-hover:scale-105 transition-transform duration-300">
               A
             </div>
             <div className="flex flex-col">
-              <span className="text-lg font-semibold text-slate-900 group-hover:text-slate-700 transition-colors">
+              <span className="text-lg font-bold text-gray-800 group-hover:text-primary transition-colors duration-300">
                 AVE Catering
               </span>
             </div>
@@ -45,22 +45,22 @@ export default function MobileHeader(): React.JSX.Element {
             <Button
               variant="ghost"
               size="icon"
-              className="h-10 w-10 rounded-lg hover:bg-slate-100 transition-colors"
+              className="h-10 w-10 rounded-xl hover:bg-primary/10 transition-all duration-300"
               onClick={() => setIsSearchOpen(!isSearchOpen)}
             >
-              <Search className="h-4 w-4 text-slate-600" />
+              <Search className="h-5 w-5 text-slate-600" />
             </Button>
 
             {/* User Button */}
             <Suspense fallback={
-              <Button variant="ghost" size="icon" className="h-10 w-10 rounded-lg">
-                <User className="h-4 w-4 text-slate-600" />
+              <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl">
+                <User className="h-5 w-5 text-slate-600" />
               </Button>
             }>
               {isAuthenticated ? <UserMenu /> : (
                 <Link href="/auth/login">
-                  <Button variant="ghost" size="icon" className="h-10 w-10 rounded-lg hover:bg-slate-100 transition-colors">
-                    <User className="h-4 w-4 text-slate-600" />
+                  <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-primary/10 transition-all duration-300">
+                    <User className="h-5 w-5 text-slate-600" />
                   </Button>
                 </Link>
               )}
@@ -68,17 +68,17 @@ export default function MobileHeader(): React.JSX.Element {
 
             {/* Cart Button */}
             <Suspense fallback={
-              <Button variant="ghost" size="icon" className="relative h-10 w-10 rounded-lg">
-                <ShoppingCart className="h-4 w-4 text-slate-600" />
+              <Button variant="ghost" size="icon" className="relative h-10 w-10 rounded-xl">
+                <ShoppingCart className="h-5 w-5 text-slate-600" />
               </Button>
             }>
               <CartSheet>
-                <Button variant="ghost" size="icon" className="relative h-10 w-10 rounded-lg hover:bg-slate-100 transition-colors">
-                  <ShoppingCart className="h-4 w-4 text-slate-600" />
+                <Button variant="ghost" size="icon" className="relative h-10 w-10 rounded-xl hover:bg-primary/10 transition-all duration-300">
+                  <ShoppingCart className="h-5 w-5 text-slate-600" />
                   {cartItems > 0 && (
                     <Badge
                       variant="destructive"
-                      className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center"
+                      className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center font-bold shadow-md border-2 border-white"
                     >
                       {cartItems}
                     </Badge>
@@ -91,13 +91,13 @@ export default function MobileHeader(): React.JSX.Element {
             <Button
               variant="ghost"
               size="icon"
-              className="h-10 w-10 rounded-lg hover:bg-slate-100 transition-colors"
+              className="h-10 w-10 rounded-lg hover:bg-primary/10  transition-all duration-300"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               {isMobileMenuOpen ? (
-                <X className="h-4 w-4 text-slate-600" />
+                <X className="h-5 w-5 text-slate-600" />
               ) : (
-                <Menu className="h-4 w-4 text-slate-600" />
+                <Menu className="h-5 w-5 text-slate-600" />
               )}
             </Button>
           </div>
@@ -106,13 +106,13 @@ export default function MobileHeader(): React.JSX.Element {
 
       {/* Mobile Search */}
       {isSearchOpen && (
-        <div className="px-6 pb-4 border-t border-gray-100">
+        <div className="px-5 pb-4 border-t border-gray-100 bg-white/80 backdrop-blur-sm animate-fadeIn">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <Input
               type="search"
               placeholder={t('searchPlaceholder')}
-              className="pl-10 pr-4 h-11 rounded-lg border-slate-200 focus:border-slate-400 focus:ring-1 focus:ring-slate-400 bg-slate-50"
+              className="pl-10 pr-4 h-11 rounded-xl border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary/30 bg-gray-50 transition-all"
               autoFocus
             />
           </div>
@@ -121,21 +121,21 @@ export default function MobileHeader(): React.JSX.Element {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="border-t border-gray-100 bg-white">
-          <div className="px-6 py-6">
+        <div className="border-t border-gray-100 bg-white/95 backdrop-blur-sm animate-slideDown">
+          <div className="px-5 py-5 space-y-6">
             {/* Categories Section */}
-            <div className="mb-8">
+            <div>
               <Button
                 variant="ghost"
-                className="w-full justify-between p-3 h-auto hover:bg-slate-50 rounded-lg"
+                className="w-full justify-between p-3  bg-gray-50 hover:bg-gray-100 transition-colors rounded-xl"
                 onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
               >
-                <span className="text-base font-medium text-slate-900">Categories</span>
+                <span className="text-base font-semibold text-slate-900">Categories</span>
                 <ChevronDown className={`h-4 w-4 text-slate-500 transition-transform duration-200 ${isCategoriesOpen ? 'rotate-180' : ''}`} />
               </Button>
               
               {isCategoriesOpen && (
-                <div className="mt-4 space-y-1">
+                <div className="mt-3 space-y-2">
                   <Link href="/category/beverages" className="block p-3 rounded-lg hover:bg-slate-50 transition-colors">
                     <span className="text-slate-700 font-medium">Beverages</span>
                   </Link>
@@ -192,12 +192,12 @@ export default function MobileHeader(): React.JSX.Element {
             <div className="mt-6 pt-4 border-t border-slate-200">
               <Button
                 variant="ghost"
-                className="w-full justify-between p-3 h-auto hover:bg-slate-50 rounded-lg"
+                className="w-full justify-between p-3 h-auto hover:bg-slate-50 rounded-xl"
                 onClick={() => setIsLanguageOpen(!isLanguageOpen)}
               >
                 <div className="flex items-center gap-3">
                   <Globe className="h-4 w-4 text-slate-600" />
-                  <span className="text-base font-medium text-slate-900">Language</span>
+                  <span className="text-base font-semibold text-slate-900">Language</span>
                 </div>
                 <ChevronDown className={`h-4 w-4 text-slate-500 transition-transform duration-200 ${isLanguageOpen ? 'rotate-180' : ''}`} />
               </Button>
