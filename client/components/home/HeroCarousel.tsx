@@ -2,45 +2,80 @@
 
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
-
-interface CarouselItem {
-  id: number;
-  title: string;
-  image: string;
-  badge: string;
-}
-
-const carouselItems: CarouselItem[] = [
-  {
-    id: 1,
-    title: 'Coca Cola Deal',
-    image: '/images/products/coca-cola.jpg',
-    badge: 'Best Seller',
-  },
-  {
-    id: 2,
-    title: 'Snacks Bundle',
-    image: '/images/products/chips-bundle.jpg',
-    badge: 'Popular',
-  },
-  {
-    id: 3,
-    title: 'Cleaning Supplies',
-    image: '/images/products/cleaning.jpg',
-    badge: 'New Deal',
-  },
-];
+import { getPublicBanners, Banner } from '@/lib/api/services/bannerService';
 
 export default function HeroCarousel(): React.JSX.Element {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [banners, setBanners] = useState<Banner[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
+    fetchBanners();
+  }, []);
+
+  const fetchBanners = async () => {
+    try {
+      setLoading(true);
+      const data = await getPublicBanners();
+      setBanners(data);
+    } catch (error) {
+      console.error('Error fetching banners:', error);
+      // Fallback to empty array if fetch fails
+      setBanners([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (banners.length === 0) return;
+    
     const interval: NodeJS.Timeout = setInterval(() => {
-      setCurrentIndex((prev: number) => (prev + 1) % carouselItems.length);
+      setCurrentIndex((prev: number) => (prev + 1) % banners.length);
     }, 4000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [banners.length]);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="relative">
+        <Card className="overflow-hidden shadow-2xl">
+          <div className="aspect-square relative bg-gradient-to-br from-primary/20 to-primary/5">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center p-8">
+                <div className="animate-pulse">
+                  <div className="h-8 bg-gray-300 rounded w-32 mx-auto mb-4"></div>
+                  <div className="h-10 bg-gray-300 rounded w-48 mx-auto mb-2"></div>
+                  <div className="h-6 bg-gray-300 rounded w-36 mx-auto"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  // Show message if no banners available
+  if (banners.length === 0) {
+    return (
+      <div className="relative">
+        <Card className="overflow-hidden shadow-2xl">
+          <div className="aspect-square relative bg-gradient-to-br from-primary/20 to-primary/5">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center p-8">
+                <p className="text-muted-foreground">No banners available</p>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  const currentBanner = banners[currentIndex];
 
   return (
     <div className="relative">
@@ -48,15 +83,24 @@ export default function HeroCarousel(): React.JSX.Element {
         <div className="aspect-square relative bg-gradient-to-br from-primary/20 to-primary/5">
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center p-8">
-              <div className="inline-block bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium mb-4">
-                {carouselItems[currentIndex].badge}
-              </div>
+              {currentBanner.badge && (
+                <div className="inline-block bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium mb-4">
+                  {currentBanner.badge}
+                </div>
+              )}
               <h3 className="text-3xl font-bold text-gray-800">
-                {carouselItems[currentIndex].title}
+                {currentBanner.title}
               </h3>
-              <p className="text-muted-foreground mt-2">
-                Up to 50% OFF
-              </p>
+              {currentBanner.subtitle && (
+                <p className="text-xl text-gray-700 mt-2">
+                  {currentBanner.subtitle}
+                </p>
+              )}
+              {currentBanner.description && (
+                <p className="text-muted-foreground mt-2">
+                  {currentBanner.description}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -64,7 +108,7 @@ export default function HeroCarousel(): React.JSX.Element {
 
       {/* Dots Indicator */}
       <div className="flex justify-center gap-2 mt-4">
-        {carouselItems.map((_, index: number) => (
+        {banners.map((_, index: number) => (
           <button
             key={index}
             onClick={() => setCurrentIndex(index)}

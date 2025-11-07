@@ -73,12 +73,12 @@ export default function ProductCard({ product }: ProductCardProps): React.JSX.El
             {/* Pricing */}
             <div className="flex items-baseline gap-2">
               <span className="text-primary font-semibold text-sm sm:text-base">
-                ${product.price.toFixed(2)}/{product.unit}
+                ${product.price?.toFixed(2)}/{product.unit}
               </span>
             </div>
             
             <div className="text-xs text-muted-foreground">
-              ${product.pricePerCase.toFixed(2)}/case
+              ${product.pricePerCase?.toFixed(2)}/case
             </div>
 
             {/* Add to Cart Button */}

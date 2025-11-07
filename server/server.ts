@@ -18,6 +18,7 @@ import offerRoutes from "./routes/offerRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
 import settingsRoutes from "./routes/settingsRoutes.js";
 import importRoutes from "./routes/importRoutes.js";
+import bannerRoutes from "./routes/bannerRoutes.js";
 import logger from "./utils/logger.js";
 
 // Load environment variables
@@ -97,6 +98,7 @@ app.use("/api/offers", offerRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/import", importRoutes);
+app.use("/api/banners", bannerRoutes);
 
 // Error handling middleware
 app.use(notFound);
