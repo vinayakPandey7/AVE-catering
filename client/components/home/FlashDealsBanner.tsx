@@ -63,21 +63,21 @@ const flashDeals: DealItem[] = [
 
 export default function FlashDealsBanner(): React.JSX.Element {
   return (
-    <section className="py-8 bg-gradient-to-r from-red-50 to-orange-50">
+    <section className="py-10 bg-gradient-to-r from-orange-50 via-white to-red-50">
       <div className="container mx-auto px-4">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-center justify-between mb-6">
+          <div className="flex items-center gap-3 mb-4 sm:mb-0">
             <div className="flex items-center gap-2">
-              <Zap className="h-6 w-6 text-orange-500 fill-current" />
-              <h2 className="text-2xl font-bold text-gray-900">Flash Deals</h2>
+              <Zap className="h-7 w-7 text-orange-500 animate-pulse drop-shadow" />
+              <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Flash Deals</h2>
             </div>
-            <Badge variant="destructive" className="animate-pulse">
+            <Badge variant="destructive" className="animate-bounce bg-orange-500">
               Limited Time
             </Badge>
           </div>
           <Link href="/category/deals">
-            <Button variant="outline" size="sm" className="gap-2">
+            <Button variant="outline" size="sm" className="gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-300">
               View All
               <ArrowRight className="h-4 w-4" />
             </Button>
@@ -85,13 +85,13 @@ export default function FlashDealsBanner(): React.JSX.Element {
         </div>
 
         {/* Deals Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-5">
           {flashDeals.map((deal: DealItem) => (
             <Link key={deal.id} href={`/product/${deal.id}`}>
-              <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 border-2 hover:border-orange-300">
-                <div className="relative">
+              <Card className="group flex flex-col h-full overflow-hidden hover:shadow-2xl transition-all duration-300 border border-transparent hover:border-orange-200 rounded-2xl bg-white">
+                <div className="relative flex-1 flex flex-col">
                   {/* Image */}
-                  <div className="aspect-square relative overflow-hidden bg-white">
+                  <div className="relative h-40 sm:h-48 bg-white overflow-hidden flex items-center justify-center">
                     <Image
                       src={deal.image}
                       alt={deal.title}
@@ -102,7 +102,7 @@ export default function FlashDealsBanner(): React.JSX.Element {
                     
                     {/* Discount Badge */}
                     <div className="absolute top-2 left-2">
-                      <Badge className="bg-red-500 text-white font-bold">
+                      <Badge className="bg-red-500 text-white text-xs sm:text-sm font-bold shadow-md px-2 py-1">
                         {deal.discount} OFF
                       </Badge>
                     </div>
@@ -110,7 +110,7 @@ export default function FlashDealsBanner(): React.JSX.Element {
                     {/* Timer */}
                     {deal.timeLeft && (
                       <div className="absolute top-2 right-2">
-                        <div className="flex items-center gap-1 bg-black/70 text-white px-2 py-1 rounded text-xs">
+                        <div className="flex items-center gap-1 bg-black/70 text-white px-2 py-1 rounded text-xs font-medium">
                           <Clock className="h-3 w-3" />
                           <span>{deal.timeLeft}</span>
                         </div>
@@ -138,11 +138,11 @@ export default function FlashDealsBanner(): React.JSX.Element {
                     {/* Progress Bar */}
                     <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
                       <div 
-                        className="bg-gradient-to-r from-red-500 to-orange-500 h-2 rounded-full transition-all duration-300"
+                        className="bg-gradient-to-r from-red-500 to-orange-500 h-2 rounded-full animate-pulse"
                         style={{ width: `${Math.random() * 40 + 30}%` }}
                       />
                     </div>
-                    <p className="text-xs text-gray-600">Limited stock left!</p>
+                    <p className="text-xs text-gray-600 italic">Limited stock left!</p>
                   </div>
                 </div>
               </Card>

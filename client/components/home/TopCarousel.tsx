@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Star, Truck, Shield, Clock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Truck, Shield, Clock } from 'lucide-react';
 import Link from 'next/link';
 
 interface TopCarouselItem {
@@ -23,7 +23,7 @@ const topCarouselItems: TopCarouselItem[] = [
     title: 'Mega Sale',
     subtitle: 'Up to 70% OFF',
     image: 'https://placehold.co/1200x400/1C75BC/white?text=MEGA+SALE&fontsize=48',
-    badge: 'Limited Time',
+    badge: '🔥 Limited Time',
     discount: '70%',
     ctaText: 'Shop Now',
     ctaLink: '/products',
@@ -34,7 +34,7 @@ const topCarouselItems: TopCarouselItem[] = [
     title: 'New Arrivals',
     subtitle: 'Fresh Stock Daily',
     image: 'https://placehold.co/1200x400/FF6B35/white?text=NEW+ARRIVALS&fontsize=48',
-    badge: 'Just In',
+    badge: '🆕 Just In',
     discount: '30%',
     ctaText: 'Explore',
     ctaLink: '/category/new-exciting',
@@ -45,7 +45,7 @@ const topCarouselItems: TopCarouselItem[] = [
     title: 'Wholesale Deals',
     subtitle: 'Best Prices Guaranteed',
     image: 'https://placehold.co/1200x400/059669/white?text=WHOLESALE+DEALS&fontsize=48',
-    badge: 'Exclusive',
+    badge: '💼 Exclusive',
     discount: '50%',
     ctaText: 'View Deals',
     ctaLink: '/category/deals',
@@ -56,7 +56,7 @@ const topCarouselItems: TopCarouselItem[] = [
     title: 'Business Essentials',
     subtitle: 'Everything You Need',
     image: 'https://placehold.co/1200x400/8B5CF6/white?text=BUSINESS+ESSENTIALS&fontsize=48',
-    badge: 'Popular',
+    badge: '⭐ Popular',
     discount: '40%',
     ctaText: 'Browse',
     ctaLink: '/products',
@@ -70,7 +70,7 @@ export default function TopCarousel(): React.JSX.Element {
   useEffect(() => {
     const interval: NodeJS.Timeout = setInterval(() => {
       setCurrentIndex((prev: number) => (prev + 1) % topCarouselItems.length);
-    }, 5000);
+    }, 6000);
     return () => clearInterval(interval);
   }, []);
 
@@ -87,9 +87,9 @@ export default function TopCarousel(): React.JSX.Element {
   return (
     <section className="relative bg-gray-50 py-4">
       <div className="container mx-auto px-4">
-        <div className="relative overflow-hidden rounded-2xl shadow-lg">
+        <div className="relative overflow-hidden rounded-3xl shadow-xl transition-all duration-500">
           {/* Main Carousel */}
-          <div className="relative h-64 md:h-80 lg:h-96">
+          <div className="relative h-88 md:h-104 lg:h-120">
             <div 
               className="flex transition-transform duration-500 ease-in-out h-full"
               style={{ transform: `translateX(-${currentIndex * 100}%)` }}
@@ -97,48 +97,52 @@ export default function TopCarousel(): React.JSX.Element {
               {topCarouselItems.map((item: TopCarouselItem) => (
                 <div key={item.id} className="w-full flex-shrink-0 relative">
                   <div 
-                    className="w-full h-full bg-cover bg-center relative"
+                    className="w-full h-full bg-cover bg-center  relative"
                     style={{ backgroundImage: `url(${item.image})` }}
                   >
                     {/* Overlay */}
-                    <div className="absolute inset-0 bg-black/40" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
                     
                     {/* Content */}
-                    <div className="absolute inset-0 flex items-center">
+                    <div className="absolute inset-0 flex items-center px-8 md:px-16">
                       <div className="container mx-auto px-8">
                         <div className="max-w-2xl">
                           {/* Badge */}
-                          <div className="inline-block mb-4">
-                            <span className="bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-bold">
+                          <div className="inline-block mb-1 sm:mb-3">
+                            <span className="bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-bold shadow">
                               {item.badge}
                             </span>
                           </div>
                           
                           {/* Title */}
-                          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2">
+                          <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white sm:mb-2 drop-shadow-lg">
                             {item.title}
                           </h2>
                           
                           {/* Subtitle */}
-                          <p className="text-xl md:text-2xl text-white/90 mb-6">
+                          <p className="text-base md:text-2xl text-white/90 mb-6 font-medium">
                             {item.subtitle}
                           </p>
                           
                           {/* Features */}
                           {item.features && (
-                            <div className="flex flex-wrap gap-4 mb-6">
-                              {item.features.map((feature: string, index: number) => (
+                          <div className="flex flex-wrap gap-2 sm:gap-4 mb-6">
+                            {item.features.map((feature, index) => {
+                              const icons = [Truck, Shield, Clock];
+                              const Icon = icons[index % icons.length];
+                              return (
                                 <div key={index} className="flex items-center gap-2 text-white/80">
-                                  <Star className="h-4 w-4 fill-current" />
+                                  <Icon className="h-5 w-5" />
                                   <span className="text-sm">{feature}</span>
                                 </div>
-                              ))}
-                            </div>
-                          )}
+                              );
+                            })}
+                          </div>
+                        )}
                           
                           {/* CTA Button */}
                           <Link href={item.ctaLink}>
-                            <Button size="lg" className="bg-white text-primary hover:bg-white/90 font-semibold">
+                            <Button size="lg" className="bg-white text-primary hover:bg-white/90 font-semibold hover:scale-105 transition-all duration-300 shadow-md">
                               {item.ctaText}
                             </Button>
                           </Link>
@@ -172,7 +176,7 @@ export default function TopCarousel(): React.JSX.Element {
           </div>
 
           {/* Dots Indicator */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-3">
             {topCarouselItems.map((_, index: number) => (
               <button
                 key={index}

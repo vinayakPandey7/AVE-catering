@@ -37,10 +37,10 @@ export default function ProductCard({ product }: ProductCardProps): React.JSX.El
 
   return (
     <Link href={`/product/${product._id}`}>
-      <Card className="group hover:shadow-lg transition-all duration-300 cursor-pointer h-full">
-        <CardContent className="p-4">
+      <Card className="group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer h-full rounded-2xl border border-gray-100 bg-white">
+        <CardContent className="p-4 flex flex-col h-full">
           {/* Image Container */}
-          <div className="relative aspect-square mb-3 rounded-lg overflow-hidden bg-gray-100">
+          <div className="relative aspect-4/3 mb-3 rounded-xl overflow-hidden bg-gray-50">
             <Image
               src={product.image}
               alt={product.name}
@@ -49,30 +49,30 @@ export default function ProductCard({ product }: ProductCardProps): React.JSX.El
               unoptimized={product.image.includes('placehold.co')}
             />
             {product.isOnOffer && (
-              <Badge className="absolute top-2 left-2 bg-red-500 hover:bg-red-600">
+              <Badge className="absolute top-2 left-2 bg-red-500/90 text-white shadow-sm px-2 py-0.5 rounded-md">
                 {t('deals')}
               </Badge>
             )}
             {!product.inStock && (
-              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-[1px]">
                 <Badge variant="secondary">{t('outOfStock')}</Badge>
               </div>
             )}
           </div>
 
           {/* Product Info */}
-          <div className="space-y-2">
-            <h3 className="font-medium text-sm line-clamp-2 min-h-[2.5rem]">
+          <div className="flex flex-col justify-between grow space-y-2">
+            <h3 className="font-semibold text-sm sm:text-base text-gray-800 line-clamp-2 min-h-[2.5rem] group-hover:text-primary transition-colors">
               {product.name}
             </h3>
             
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground mt-1">
               {product.packSize}
             </p>
 
             {/* Pricing */}
             <div className="flex items-baseline gap-2">
-              <span className="text-primary font-semibold">
+              <span className="text-primary font-semibold text-sm sm:text-base">
                 ${product.price.toFixed(2)}/{product.unit}
               </span>
             </div>
@@ -83,7 +83,7 @@ export default function ProductCard({ product }: ProductCardProps): React.JSX.El
 
             {/* Add to Cart Button */}
             <Button
-              className="w-full mt-3 bg-primary hover:bg-primary/90"
+              className="w-full mt-3 bg-primary hover:bg-primary/90 rounded-full text-sm font-medium transition-transform active:scale-95"
               size="sm"
               onClick={handleAddToCart}
               disabled={!product.inStock}

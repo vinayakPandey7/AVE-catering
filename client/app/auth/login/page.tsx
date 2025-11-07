@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAppDispatch } from '@/lib/store/hooks';
 import { loginAsync } from '@/lib/store/slices/authSlice';
 import { toast } from 'sonner';
+import { Mail } from 'lucide-react'
 
 export default function LoginPage(): React.JSX.Element {
   const router = useRouter();
@@ -43,25 +44,27 @@ export default function LoginPage(): React.JSX.Element {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-white to-primary/10 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-white to-primary/5 p-6">
+      <Card className="w-full max-w-md shadow-lg border-t-4 border-primary">
+        <CardHeader className="space-y-3 text-center">
           <div className="flex justify-center mb-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-2xl">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white font-bold text-2xl shadow-md">
               A
             </div>
           </div>
-          <CardTitle className="text-2xl text-center">Welcome Back</CardTitle>
-          <CardDescription className="text-center">
-            Sign in to your AVE Catering account
+          <CardTitle className="text-3xl font-semibold text-gray-800">Welcome Back</CardTitle>
+          <CardDescription className="text-gray-500">
+            Sign in to your <span className="font-medium text-primary">AVE Catering</span> account
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-5">
             <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">
+              <label htmlFor="email" className="text-sm font-medium text-gray-700">
                 Email
               </label>
+              <div className='relative'>
+                <Mail className='absolute left-3 top-3 h-4 w-4 text-gray-400' />
               <Input
                 id="email"
                 type="email"
@@ -69,7 +72,9 @@ export default function LoginPage(): React.JSX.Element {
                 value={email}
                 onChange={handleEmailChange}
                 required
+                className='pl-9 focus:ring-2 focus:ring-primary/50 transition-all'
               />
+              </div>
             </div>
             
             <div className="space-y-2">
@@ -106,7 +111,7 @@ export default function LoginPage(): React.JSX.Element {
           <div className="mt-6 text-center text-sm">
             <span className="text-muted-foreground">Don&apos;t have an account? </span>
             <Link href="/auth/register" className="text-primary hover:underline font-medium">
-              Register
+              Register Here
             </Link>
           </div>
 

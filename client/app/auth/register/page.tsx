@@ -71,14 +71,14 @@ export default function RegisterPage(): React.JSX.Element {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-white to-primary/10 p-4">
-      <Card className="w-full max-w-2xl">
-        <CardHeader className="space-y-1">
+      <Card className="w-full max-w-md shadow-lg border border-gray-100">
+        <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-2xl">
               A
             </div>
           </div>
-          <CardTitle className="text-2xl text-center">Create AVE Catering Account</CardTitle>
+          <CardTitle className="text-2xl font-semibold text-center">Create AVE Catering Account</CardTitle>
           <CardDescription className="text-center">
             Register your business for wholesale pricing and benefits
           </CardDescription>
