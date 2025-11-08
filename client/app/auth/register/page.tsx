@@ -70,8 +70,8 @@ export default function RegisterPage(): React.JSX.Element {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-white to-primary/10 p-4">
-      <Card className="w-full max-w-md shadow-lg border border-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-white to-primary/5 p-6">
+      <Card className="w-full max-w-md shadow-lg border-t-4 border-primary">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-2xl">

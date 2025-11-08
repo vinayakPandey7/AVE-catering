@@ -34,9 +34,9 @@ export default function ProductSection({
           </div>
           {viewAllLink && (
             <Link href={viewAllLink}>
-              <Button variant="ghost" className="gap-2">
+              <Button variant="ghost" className="gap-2 text-lg font-bold">
                 View all
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-5 w-5" />
               </Button>
             </Link>
           )}

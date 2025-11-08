@@ -87,7 +87,7 @@ export default function TopCarousel(): React.JSX.Element {
   return (
     <section className="relative bg-gray-50 py-4">
       <div className="container mx-auto px-4">
-        <div className="relative overflow-hidden rounded-3xl shadow-xl transition-all duration-500">
+        <div className="relative overflow-hidden rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500">
           {/* Main Carousel */}
           <div className="relative h-88 md:h-104 lg:h-120">
             <div 
