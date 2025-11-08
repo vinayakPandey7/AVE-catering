@@ -189,6 +189,8 @@ const createProduct = asyncHandler(async (req: MulterRequest, res) => {
   // Handle image upload to Cloudinary
   if (req.file && req.file.buffer && req.file.buffer.length > 0) {
     try {
+      console.log(`Uploading image for product: ${name}, Size: ${req.file.buffer.length} bytes`);
+      
       const uploadResult = await uploadToCloudinary(req.file.buffer, {
         folder: "ave-catering/products",
         public_id: `product_${sku}_${Date.now()}`,
@@ -201,12 +203,15 @@ const createProduct = asyncHandler(async (req: MulterRequest, res) => {
 
       imageUrl = uploadResult.secure_url;
       imagePublicId = uploadResult.public_id;
-    } catch (error) {
+      console.log(`Image uploaded successfully: ${imageUrl}`);
+    } catch (error: any) {
+      console.error("Cloudinary upload error:", error);
       res.status(400);
-      throw new Error("Image upload failed");
+      throw new Error(`Image upload failed: ${error.message || 'Unknown error'}`);
     }
   } else {
-    // Make image optional for now - use placeholder
+    // Make image optional - use placeholder if no valid file provided
+    console.log(`No valid image file for product: ${name}, using placeholder`);
     imageUrl = `https://placehold.co/400x400/8B5CF6/white?text=${encodeURIComponent(name)}&fontsize=16`;
     imagePublicId = "";
   }
