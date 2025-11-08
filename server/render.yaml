@@ -11,4 +11,20 @@ services:
         value: production
       - key: PORT
         value: 10000
+      # Database Configuration (REQUIRED - ADD YOUR MONGODB URI)
+      - key: MONGODB_URI
+        sync: false  # Mark as secret - set this in Render Dashboard
+      # JWT Secret (REQUIRED - ADD YOUR SECRET KEY)
+      - key: JWT_SECRET
+        sync: false  # Mark as secret - set this in Render Dashboard
+      # Cloudinary Configuration (REQUIRED for image uploads)
+      - key: CLOUDINARY_CLOUD_NAME
+        value: dqjhf8ios
+      - key: CLOUDINARY_API_KEY
+        sync: false  # Mark as secret - set this in Render Dashboard
+      - key: CLOUDINARY_API_SECRET
+        sync: false  # Mark as secret - set this in Render Dashboard
+      # CORS Configuration
+      - key: FRONTEND_URL
+        value: https://ave-catering.vercel.app
     healthCheckPath: /health
