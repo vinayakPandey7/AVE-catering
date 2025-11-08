@@ -31,12 +31,7 @@ export default function Header(): React.JSX.Element {
         <div className="bg-gradient-to-r from-primary to-primary/90 text-primary-foreground">
           <div className="container mx-auto px-6 py-2">
             <div className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-4">
-                <span className="hidden sm:flex items-center gap-2">
-                  <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                  {t('freeDelivery')}
-                </span>
-              </div>
+             
               <span className="font-medium hidden md:inline tracking-wide">{t('welcome')}</span>
               <div className="flex items-center gap-2">
                 <Phone className="h-4 w-4" />

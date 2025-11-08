@@ -93,7 +93,7 @@ export default function CategoriesDropdown(): React.JSX.Element {
                     </div>
                     <h3 className="text-lg font-bold text-gray-900">Categories</h3>
                   </div>
-                  <div className="space-y-2 max-h-96 overflow-y-auto">
+                  <div className="space-y-2 max-h-96 overflow-hidden">
                     {categoryTree.map((category: Category) => (
                       <div
                         key={category._id}

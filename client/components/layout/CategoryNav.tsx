@@ -12,13 +12,13 @@ export default function CategoryNav(): React.JSX.Element {
   if (isLoading) {
     return (
       <nav className="border-b bg-gradient-to-r from-gray-50 to-gray-100 z-40">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center gap-6 overflow-x-auto py-4">
+        <div className="container mx-auto px-2 sm:px-4">
+          <div className="flex items-center gap-3 sm:gap-6 overflow-x-auto py-2 sm:py-4">
             {[...Array(8)].map((_, index) => (
-              <div key={index} className="flex-shrink-0">
-                <div className="flex flex-col items-center gap-2">
-                  <div className="w-16 h-16 rounded-full bg-gray-200 animate-pulse" />
-                  <div className="h-4 w-16 bg-gray-200 animate-pulse rounded" />
+              <div key={index} className="flex-shrink-0 w-[22%]">
+                <div className="flex flex-col items-center gap-1 sm:gap-2">
+                  <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-gray-200 animate-pulse" />
+                  <div className="h-3 w-10 md:h-4 md:w-16 bg-gray-200 animate-pulse rounded" />
                 </div>
               </div>
             ))}
@@ -29,10 +29,10 @@ export default function CategoryNav(): React.JSX.Element {
   }
   return (
     <nav className="border-b bg-gradient-to-r from-white via-gray-50 to-white shadow-sm z-40">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-center gap-6 overflow-x-auto py-4 scrollbar-hide scroll-smooth">
+      <div className="container mx-auto px-1 md:px-4">
+        <div className="flex items-center gap-1 md:gap-6 overflow-x-auto py-4 scrollbar-hide scroll-smooth justify-start lg:justify-center">
           {categories.slice(0, 8).map((category) => (
-            <Link key={category._id} href={`/category/${category.slug}`} className="flex-shrink-0 group">
+            <Link key={category._id} href={`/category/${category.slug}`} className="flex-shrink-0 group w-[25%] sm:w-auto text-center">
               <motion.div 
               whileHover={{y: -3, scale: 1.05}}
               transition={{duration: 0.25}}
@@ -48,7 +48,7 @@ export default function CategoryNav(): React.JSX.Element {
                   />
                 </div>
                 {/* Category Label */}
-                <span className="text-sm font-semibold text-gray-700 text-center leading-tight group-hover:text-primary transition-colors duration-200 tracking-tight">
+                <span className="text-[10px] sm:text-sm font-semibold text-gray-700 text-center leading-tight group-hover:text-primary transition-colors duration-200 tracking-tight">
                   {category.name}
                 </span>
               </motion.div>
