@@ -37,7 +37,7 @@ export default function ProductCard({ product }: ProductCardProps): React.JSX.El
 
   return (
     <Link href={`/product/${product._id}`}>
-      <Card className="group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer h-full rounded-2xl border border-gray-100 bg-white">
+      <Card className="group hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-pointer h-full rounded-2xl border border-gray-100 bg-white shadow-lg">
         <CardContent className="p-4 flex flex-col h-full">
           {/* Image Container */}
           <div className="relative aspect-4/3 mb-3 rounded-xl overflow-hidden bg-gray-50">
@@ -71,19 +71,20 @@ export default function ProductCard({ product }: ProductCardProps): React.JSX.El
             </p>
 
             {/* Pricing */}
-            <div className="flex items-baseline gap-2">
+            <div className="flex items-baseline justify-between gap-2">
               <span className="text-primary font-semibold text-sm sm:text-base">
                 ${product.price?.toFixed(2)}/{product.unit}
               </span>
-            </div>
-            
-            <div className="text-xs text-muted-foreground">
+              <div className="text-sm text-muted-foreground">
               ${product.pricePerCase?.toFixed(2)}/case
             </div>
+            </div>
+            
+            
 
             {/* Add to Cart Button */}
             <Button
-              className="w-full mt-3 bg-primary hover:bg-primary/90 rounded-full text-sm font-medium transition-transform active:scale-95"
+              className="w-full mt-3 bg-primary hover:bg-primary/90 rounded-lg text-sm font-medium transition-transform active:scale-95"
               size="sm"
               onClick={handleAddToCart}
               disabled={!product.inStock}
