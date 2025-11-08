@@ -18,7 +18,9 @@
     "seed:categories": "node --loader ts-node/esm seeders/categorySeeder.ts",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "test:cloudinary": "npx tsx test-cloudinary.ts",
+    "setup:cloudinary": "chmod +x setup-cloudinary.sh && ./setup-cloudinary.sh"
   },
   "keywords": [
     "api",
