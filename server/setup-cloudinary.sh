@@ -4,12 +4,24 @@
 # This script updates your .env file with Cloudinary credentials
 
 echo "🚀 Setting up Cloudinary configuration..."
+echo ""
+echo "⚠️  IMPORTANT: You need your Cloudinary credentials!"
+echo "📍 Find them at: https://console.cloudinary.com/console"
+echo ""
 
-# Cloudinary credentials (from your account)
-CLOUDINARY_CLOUD_NAME="dqjhf8ios"
-CLOUDINARY_API_KEY="975461118425658"
-CLOUDINARY_API_SECRET="4SdGHJknlmUqpgIltOyfRZMD9zc"
+# Prompt for credentials
+read -p "Enter your Cloudinary Cloud Name: " CLOUDINARY_CLOUD_NAME
+read -p "Enter your Cloudinary API Key: " CLOUDINARY_API_KEY
+read -sp "Enter your Cloudinary API Secret: " CLOUDINARY_API_SECRET
+echo ""
 
+# Validate inputs
+if [ -z "$CLOUDINARY_CLOUD_NAME" ] || [ -z "$CLOUDINARY_API_KEY" ] || [ -z "$CLOUDINARY_API_SECRET" ]; then
+  echo "❌ Error: All credentials are required!"
+  exit 1
+fi
+
+echo ""
 echo "📋 Using credentials:"
 echo "   Cloud Name: $CLOUDINARY_CLOUD_NAME"
 echo "   API Key: $CLOUDINARY_API_KEY"
